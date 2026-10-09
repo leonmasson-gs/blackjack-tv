@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daily Hand</title>
+<link rel="preload" href="/fonts/young-serif-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/hanken-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:"Young Serif";font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/young-serif-latin-400-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Hanken Grotesk";font-style:normal;font-weight:100 900;font-display:swap;src:url(/fonts/hanken-grotesk-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+</style>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --page:#EDF1EE; --surface:#FFFFFF; --ink:#13201B; --muted:#55665F; --line:#CCD7D1; --line-strong:#76877F;
+  --felt:#1D5B47; --felt-2:#154636; --felt-ink:#EAF4EE; --felt-muted:#BCD8CA;
+  --card:#FCFBF7; --red:#C2362F; --black:#1A1F1D;
+  --accent:#F2B440; --accent-ink:#2A1F00; --accent-hover:#F7C45E;
+  --good:#166B45; --good-bg:#DDF1E7; --warn:#8F6200; --warn-bg:#FBEFCF; --bad:#B63229; --bad-bg:#F8DEDA;
+  --focus:#1B5FD6; --placeholder:#8F6200;
+  --font-ui:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-display:"Young Serif",Georgia,"Times New Roman",serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --page:#0E1513; --surface:#17211E; --ink:#E7EEEA; --muted:#9DB0A7; --line:#2B3B36; --line-strong:#71867D;
+    --good:#53CC95; --good-bg:#16382B; --warn:#EBC15E; --warn-bg:#3A2F10; --bad:#F0877E; --bad-bg:#40201C;
+    --focus:#7AA8FF; --placeholder:#EBC15E; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#0E1513; --surface:#17211E; --ink:#E7EEEA; --muted:#9DB0A7; --line:#2B3B36; --line-strong:#71867D;
+  --good:#53CC95; --good-bg:#16382B; --warn:#EBC15E; --warn-bg:#3A2F10; --bad:#F0877E; --bad-bg:#40201C;
+  --focus:#7AA8FF; --placeholder:#EBC15E; color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--font-ui);font-size:16px;line-height:1.5}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+[tabindex="-1"]:focus{outline:none}
+.wrap{max-width:520px;margin:0 auto;padding:0 16px 40px}
+h1,h2,h3{font-family:var(--font-display);font-weight:400;line-height:1.15;margin:0}
+p{margin:0 0 .75em}
+.muted{color:var(--muted)}
+.small{font-size:.875rem}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 0 10px}
+.brand{background:none;border:0;padding:4px 0;font-family:var(--font-display);font-size:1.45rem;color:var(--ink)}
+.top nav{display:flex;gap:4px}
+.link{background:none;border:0;padding:8px 10px;border-radius:8px;color:var(--muted);font-weight:500;font-size:.9rem}
+.link:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.top .link,.row>.link{min-height:44px;display:inline-flex;align-items:center}
+.link[aria-current="page"]{color:var(--ink);font-weight:700}
+
+/* table + cards */
+.table{background:var(--felt);color:var(--felt-ink);border-radius:22px;padding:18px 18px 20px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),inset 0 -14px 30px rgba(0,0,0,.18)}
+.seat{display:flex;flex-direction:column;gap:8px}
+.seat + .seat{margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.14)}
+.seat-label{display:flex;align-items:center;justify-content:space-between;font-size:.9rem;color:var(--felt-muted);font-weight:500}
+.pill{background:rgba(0,0,0,.28);color:var(--felt-ink);border-radius:999px;padding:3px 12px;font-weight:700;font-size:.95rem}
+.cards{display:flex;gap:10px}
+.card{width:68px;height:96px;border-radius:9px;background:var(--card);color:var(--black);position:relative;display:flex;flex-direction:column;align-items:flex-start;padding:7px 8px;box-shadow:0 2px 0 rgba(0,0,0,.25),0 6px 14px rgba(0,0,0,.22);font-family:var(--font-display)}
+.card.red{color:var(--red)}
+.card .rk{font-size:1.65rem;line-height:1}
+.card .su{font-size:1.25rem;line-height:1.1}
+.card .big{position:absolute;right:8px;bottom:6px;font-size:1.9rem;opacity:.9}
+.card.back{background:repeating-linear-gradient(45deg,#2A6E58 0 6px,#235E4A 6px 12px);border:4px solid var(--card)}
+@media (prefers-reduced-motion:no-preference){
+  .card{animation:deal .34s cubic-bezier(.2,.8,.3,1) both;animation-delay:var(--d,0s)}
+  @keyframes deal{from{opacity:0;transform:translateY(-14px) rotate(-4deg)}to{opacity:1;transform:none}}
+}
+
+/* hero on home */
+.hero{margin:6px 0 18px}
+.hero h1{font-size:2.3rem;margin:6px 0 8px}
+.hero p{font-size:1.05rem;color:var(--muted);max-width:44ch}
+.ask{margin:14px 0 0;font-family:var(--font-display);font-size:1.15rem;color:var(--felt-ink)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 20px;border-radius:12px;border:2px solid transparent;font-weight:700;font-size:1rem}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{background:var(--accent-hover)}
+.btn.ghost{background:transparent;border-color:var(--line-strong);color:var(--ink)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn.block{display:flex;width:100%}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.act{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 6px;background:var(--surface);border:2px solid var(--line-strong);border-radius:14px;min-height:76px}
+.act:hover{border-color:var(--ink)}
+.act b{font-family:var(--font-display);font-weight:400;font-size:1.2rem}
+.act span{font-size:.875rem;color:var(--muted);text-align:center;line-height:1.25}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.stack>*+*{margin-top:14px}
+
+/* progress */
+.dots{display:flex;gap:6px;margin:4px 0 12px;align-items:center}
+.dot{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.dot.done{background:var(--ink)}
+.dot.now{background:var(--accent)}
+.dots .n{font-size:.875rem;color:var(--muted);margin-left:6px;white-space:nowrap}
+
+/* panels */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+.verdict{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 12px 3px 8px;font-weight:700;font-size:.9rem}
+.badge.g{background:var(--good-bg);color:var(--good)}
+.badge.y{background:var(--warn-bg);color:var(--warn)}
+.badge.r{background:var(--bad-bg);color:var(--bad)}
+.verdict h2{font-size:1.5rem}
+.evs{display:grid;gap:8px;margin:12px 0 4px}
+.ev{display:grid;grid-template-columns:62px 1fr 52px;gap:8px;align-items:center;font-size:.92rem}
+.ev .nm{font-weight:600}
+.track{position:relative;height:22px;background:color-mix(in srgb,var(--ink) 6%,transparent);border-radius:6px}
+.track::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:var(--muted);opacity:.55}
+.bar{position:absolute;top:3px;bottom:3px;border-radius:4px;background:var(--muted);opacity:.55}
+.ev.best .bar{background:var(--good);opacity:1}
+.ev.pick .track{outline:2px solid var(--ink);outline-offset:1px}
+.ev .val{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.tags{font-size:.875rem;color:var(--muted);margin:0 0 0 0}
+.fact{border-left:4px solid var(--accent);padding:2px 0 2px 12px;margin-top:14px}
+.fact b{font-weight:700}
+.trap{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:8px 12px;font-size:.92rem;margin:10px 0 0}
+.crowd{margin:10px 0 0;font-size:.95rem}
+.sample{display:inline-block;background:var(--warn-bg);color:var(--warn);border-radius:6px;padding:1px 8px;font-size:.875rem;font-weight:700;margin-bottom:6px}
+
+/* result */
+.score{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.score .num{font-family:var(--font-display);font-size:4.6rem;line-height:1}
+.score .of{font-size:1.1rem;color:var(--muted)}
+.style{margin:10px 0 0;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--accent) 22%,var(--surface));color:var(--ink)}
+.style b{font-family:var(--font-display);font-weight:400;font-size:1.2rem}
+.grid{display:flex;gap:8px;margin:14px 0}
+.tile{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem}
+.tile.g{background:var(--good-bg);color:var(--good)}
+.tile.y{background:var(--warn-bg);color:var(--warn)}
+.tile.r{background:var(--bad-bg);color:var(--bad)}
+table.hands{width:100%;border-collapse:collapse;font-size:.92rem}
+table.hands th{font-weight:600;text-align:left;color:var(--muted);padding:6px 6px 6px 0;border-bottom:1px solid var(--line)}
+table.hands td{padding:9px 6px 9px 0;border-bottom:1px solid var(--line);vertical-align:top}
+table.hands td:last-child,table.hands th:last-child{text-align:right;padding-right:0}
+.stats{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.stats li{display:flex;gap:10px;align-items:baseline}
+.stats .k{font-family:var(--font-display);font-size:1.5rem;min-width:62px}
+.field{display:flex;gap:8px;margin-top:8px}
+.field input{flex:1;min-width:0;padding:10px 12px;border:2px solid var(--line-strong);border-radius:10px;background:var(--surface)}
+.err{color:var(--bad);font-size:.9rem;margin-top:6px}
+textarea.share{width:100%;border:2px solid var(--line-strong);border-radius:10px;background:var(--surface);padding:10px 12px;resize:none;font-family:ui-monospace,Menlo,monospace;font-size:.9rem}
+
+/* board */
+.tabs{display:flex;gap:6px;margin:6px 0 12px}
+.tab{flex:1;padding:10px;border-radius:10px;border:2px solid var(--line-strong);background:transparent;font-weight:600}
+.tab[aria-selected="true"]{border-color:var(--ink);background:var(--surface)}
+table.board{width:100%;border-collapse:collapse}
+table.board td,table.board th{padding:10px 6px;border-bottom:1px solid var(--line);text-align:left}
+table.board th{font-size:.85rem;color:var(--muted);font-weight:600}
+table.board .r{text-align:right;font-variant-numeric:tabular-nums}
+table.board tr.me td{background:color-mix(in srgb,var(--accent) 22%,transparent);font-weight:700}
+.rank{width:34px;font-family:var(--font-display)}
+
+/* misc */
+.rg{margin-top:28px;font-size:.875rem;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+.ph{outline:2px dashed var(--placeholder);outline-offset:2px;color:var(--placeholder);padding:0 4px;border-radius:3px}
+details.panel summary{cursor:pointer;font-weight:700}
+.about h2{font-size:1.3rem;margin:22px 0 8px}
+.about ul{padding-left:1.1em;margin:0 0 .75em}
+.about li{margin-bottom:.4em}
+.back{margin:4px 0 4px -10px}
+.note{background:color-mix(in srgb,var(--ink) 5%,transparent);border-radius:10px;padding:10px 12px;font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <button class="brand" data-go="home" aria-label="Daily Hand home">Daily Hand</button>
+    <nav aria-label="Main">
+      <button class="link" data-go="board" id="nav-board">Leaderboard</button>
+      <button class="link" data-go="about" id="nav-about">How it's scored</button>
+    </nav>
+  </header>
+  <main id="app" tabindex="-1"></main>
+  <footer class="rg"><p style="margin:0">Free to play. No money, chips or prizes are involved. <span class="ph">[Placeholder: responsible gambling wording, pending legal review]</span></p></footer>
+  <div id="live" class="sr" aria-live="polite"></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+/* ---------- config & data ---------- */
+var POOL = {"hands":[{"id":"h9-2","soft":false,"total":9,"up":2,"ev":{"stand":-0.2928,"hit":0.0744,"double":0.0611},"best":"hit","gap2":0.0133,"spread":0.3672,"stand":[0.354,0,0.646],"trap":false,"instinct":"hit"},{"id":"h9-3","soft":false,"total":9,"up":3,"ev":{"stand":-0.2523,"hit":0.1013,"double":0.1208},"best":"double","gap2":0.0196,"spread":0.3731,"stand":[0.374,0,0.626],"trap":true,"instinct":"hit"},{"id":"h9-4","soft":false,"total":9,"up":4,"ev":{"stand":-0.2111,"hit":0.129,"double":0.1819},"best":"double","gap2":0.053,"spread":0.393,"stand":[0.394,0,0.606],"trap":true,"instinct":"hit"},{"id":"h9-5","soft":false,"total":9,"up":5,"ev":{"stand":-0.1672,"hit":0.158,"double":0.2431},"best":"double","gap2":0.085,"spread":0.4102,"stand":[0.416,0,0.584],"trap":true,"instinct":"hit"},{"id":"h9-6","soft":false,"total":9,"up":6,"ev":{"stand":-0.1537,"hit":0.196,"double":0.3171},"best":"double","gap2":0.121,"spread":0.4708,"stand":[0.423,0,0.577],"trap":true,"instinct":"hit"},{"id":"h9-7","soft":false,"total":9,"up":7,"ev":{"stand":-0.4754,"hit":0.1719,"double":0.1043},"best":"hit","gap2":0.0676,"spread":0.6472,"stand":[0.262,0,0.738],"trap":false,"instinct":"hit"},{"id":"h9-8","soft":false,"total":9,"up":8,"ev":{"stand":-0.5105,"hit":0.0984,"double":-0.0264},"best":"hit","gap2":0.1248,"spread":0.6089,"stand":[0.245,0,0.755],"trap":false,"instinct":"hit"},{"id":"h9-9","soft":false,"total":9,"up":9,"ev":{"stand":-0.5431,"hit":-0.0522,"double":-0.301},"best":"hit","gap2":0.2488,"spread":0.491,"stand":[0.228,0,0.772],"trap":false,"instinct":"hit"},{"id":"h9-10","soft":false,"total":9,"up":10,"ev":{"stand":-0.5404,"hit":-0.153,"double":-0.4667},"best":"hit","gap2":0.3138,"spread":0.3875,"stand":[0.23,0,0.77],"trap":false,"instinct":"hit"},{"id":"h9-11","soft":false,"total":9,"up":11,"ev":{"stand":-0.667,"hit":-0.0657,"double":-0.4329},"best":"hit","gap2":0.3672,"spread":0.6013,"stand":[0.167,0,0.833],"trap":false,"instinct":"hit"},{"id":"h10-2","soft":false,"total":10,"up":2,"ev":{"stand":-0.2928,"hit":0.1825,"double":0.3589},"best":"double","gap2":0.1764,"spread":0.6517,"stand":[0.354,0,0.646],"trap":true,"instinct":"hit"},{"id":"h10-3","soft":false,"total":10,"up":3,"ev":{"stand":-0.2523,"hit":0.2061,"double":0.4093},"best":"double","gap2":0.2032,"spread":0.6616,"stand":[0.374,0,0.626],"trap":true,"instinct":"hit"},{"id":"h10-4","soft":false,"total":10,"up":4,"ev":{"stand":-0.2111,"hit":0.2305,"double":0.4609},"best":"double","gap2":0.2305,"spread":0.672,"stand":[0.394,0,0.606],"trap":true,"instinct":"hit"},{"id":"h10-5","soft":false,"total":10,"up":5,"ev":{"stand":-0.1672,"hit":0.2563,"double":0.5125},"best":"double","gap2":0.2563,"spread":0.6797,"stand":[0.416,0,0.584],"trap":true,"instinct":"hit"},{"id":"h10-6","soft":false,"total":10,"up":6,"ev":{"stand":-0.1537,"hit":0.2878,"double":0.5756},"best":"double","gap2":0.2878,"spread":0.7293,"stand":[0.423,0,0.577],"trap":true,"instinct":"hit"},{"id":"h10-7","soft":false,"total":10,"up":7,"ev":{"stand":-0.4754,"hit":0.2569,"double":0.3924},"best":"double","gap2":0.1355,"spread":0.8678,"stand":[0.262,0,0.738],"trap":true,"instinct":"hit"},{"id":"h10-8","soft":false,"total":10,"up":8,"ev":{"stand":-0.5105,"hit":0.198,"double":0.2866},"best":"double","gap2":0.0887,"spread":0.7972,"stand":[0.245,0,0.755],"trap":true,"instinct":"hit"},{"id":"h10-9","soft":false,"total":10,"up":9,"ev":{"stand":-0.5431,"hit":0.1165,"double":0.1443},"best":"double","gap2":0.0278,"spread":0.6875,"stand":[0.228,0,0.772],"trap":true,"instinct":"hit"},{"id":"h10-10","soft":false,"total":10,"up":10,"ev":{"stand":-0.5404,"hit":0.0253,"double":-0.0087},"best":"hit","gap2":0.034,"spread":0.5657,"stand":[0.23,0,0.77],"trap":false,"instinct":"hit"},{"id":"h10-11","soft":false,"total":10,"up":11,"ev":{"stand":-0.667,"hit":0.0814,"double":-0.014},"best":"hit","gap2":0.0955,"spread":0.7484,"stand":[0.167,0,0.833],"trap":false,"instinct":"hit"},{"id":"h11-2","soft":false,"total":11,"up":2,"ev":{"stand":-0.2928,"hit":0.2384,"double":0.4706},"best":"double","gap2":0.2323,"spread":0.7634,"stand":[0.354,0,0.646],"trap":true,"instinct":"hit"},{"id":"h11-3","soft":false,"total":11,"up":3,"ev":{"stand":-0.2523,"hit":0.2603,"double":0.5178},"best":"double","gap2":0.2575,"spread":0.77,"stand":[0.374,0,0.626],"trap":true,"instinct":"hit"},{"id":"h11-4","soft":false,"total":11,"up":4,"ev":{"stand":-0.2111,"hit":0.283,"double":0.566},"best":"double","gap2":0.283,"spread":0.7771,"stand":[0.394,0,0.606],"trap":true,"instinct":"hit"},{"id":"h11-5","soft":false,"total":11,"up":5,"ev":{"stand":-0.1672,"hit":0.3073,"double":0.6147},"best":"double","gap2":0.3073,"spread":0.7819,"stand":[0.416,0,0.584],"trap":true,"instinct":"hit"},{"id":"h11-6","soft":false,"total":11,"up":6,"ev":{"stand":-0.1537,"hit":0.3337,"double":0.6674},"best":"double","gap2":0.3337,"spread":0.8211,"stand":[0.423,0,0.577],"trap":true,"instinct":"hit"},{"id":"h11-7","soft":false,"total":11,"up":7,"ev":{"stand":-0.4754,"hit":0.2921,"double":0.4629},"best":"double","gap2":0.1707,"spread":0.9383,"stand":[0.262,0,0.738],"trap":true,"instinct":"hit"},{"id":"h11-8","soft":false,"total":11,"up":8,"ev":{"stand":-0.5105,"hit":0.23,"double":0.3507},"best":"double","gap2":0.1207,"spread":0.8612,"stand":[0.245,0,0.755],"trap":true,"instinct":"hit"},{"id":"h11-9","soft":false,"total":11,"up":9,"ev":{"stand":-0.5431,"hit":0.1583,"double":0.2278},"best":"double","gap2":0.0695,"spread":0.7709,"stand":[0.228,0,0.772],"trap":true,"instinct":"hit"},{"id":"h11-10","soft":false,"total":11,"up":10,"ev":{"stand":-0.5404,"hit":0.1195,"double":0.1797},"best":"double","gap2":0.0602,"spread":0.7201,"stand":[0.23,0,0.77],"trap":true,"instinct":"hit"},{"id":"h11-11","soft":false,"total":11,"up":11,"ev":{"stand":-0.667,"hit":0.143,"double":0.1091},"best":"hit","gap2":0.0339,"spread":0.81,"stand":[0.167,0,0.833],"trap":false,"instinct":"hit"},{"id":"h12-2","soft":false,"total":12,"up":2,"ev":{"stand":-0.2928,"hit":-0.2534,"double":-0.5068},"best":"hit","gap2":0.0394,"spread":0.2534,"stand":[0.354,0,0.646],"trap":true,"instinct":"stand"},{"id":"h12-3","soft":false,"total":12,"up":3,"ev":{"stand":-0.2523,"hit":-0.2337,"double":-0.4674},"best":"hit","gap2":0.0186,"spread":0.2337,"stand":[0.374,0,0.626],"trap":true,"instinct":"stand"},{"id":"h12-5","soft":false,"total":12,"up":5,"ev":{"stand":-0.1672,"hit":-0.1933,"double":-0.3865},"best":"stand","gap2":0.0261,"spread":0.2193,"stand":[0.416,0,0.584],"trap":false,"instinct":"stand"},{"id":"h12-6","soft":false,"total":12,"up":6,"ev":{"stand":-0.1537,"hit":-0.1705,"double":-0.3411},"best":"stand","gap2":0.0168,"spread":0.1874,"stand":[0.423,0,0.577],"trap":false,"instinct":"stand"},{"id":"h12-7","soft":false,"total":12,"up":7,"ev":{"stand":-0.4754,"hit":-0.2128,"double":-0.5067},"best":"hit","gap2":0.2625,"spread":0.2939,"stand":[0.262,0,0.738],"trap":false,"instinct":"hit"},{"id":"h12-8","soft":false,"total":12,"up":8,"ev":{"stand":-0.5105,"hit":-0.2716,"double":-0.6157},"best":"hit","gap2":0.2389,"spread":0.3441,"stand":[0.245,0,0.755],"trap":false,"instinct":"hit"},{"id":"h12-9","soft":false,"total":12,"up":9,"ev":{"stand":-0.5431,"hit":-0.34,"double":-0.7375},"best":"hit","gap2":0.2031,"spread":0.3975,"stand":[0.228,0,0.772],"trap":false,"instinct":"hit"},{"id":"h12-10","soft":false,"total":12,"up":10,"ev":{"stand":-0.5404,"hit":-0.381,"double":-0.7968},"best":"hit","gap2":0.1594,"spread":0.4158,"stand":[0.23,0,0.77],"trap":false,"instinct":"hit"},{"id":"h12-11","soft":false,"total":12,"up":11,"ev":{"stand":-0.667,"hit":-0.3505,"double":-0.8293},"best":"hit","gap2":0.3164,"spread":0.4788,"stand":[0.167,0,0.833],"trap":false,"instinct":"hit"},{"id":"h13-2","soft":false,"total":13,"up":2,"ev":{"stand":-0.2928,"hit":-0.3078,"double":-0.6156},"best":"stand","gap2":0.015,"spread":0.3228,"stand":[0.354,0,0.646],"trap":false,"instinct":"stand"},{"id":"h13-3","soft":false,"total":13,"up":3,"ev":{"stand":-0.2523,"hit":-0.2912,"double":-0.5824},"best":"stand","gap2":0.039,"spread":0.3302,"stand":[0.374,0,0.626],"trap":false,"instinct":"stand"},{"id":"h13-4","soft":false,"total":13,"up":4,"ev":{"stand":-0.2111,"hit":-0.2742,"double":-0.5484},"best":"stand","gap2":0.0632,"spread":0.3374,"stand":[0.394,0,0.606],"trap":false,"instinct":"stand"},{"id":"h13-5","soft":false,"total":13,"up":5,"ev":{"stand":-0.1672,"hit":-0.2573,"double":-0.5147},"best":"stand","gap2":0.0901,"spread":0.3475,"stand":[0.416,0,0.584],"trap":false,"instinct":"stand"},{"id":"h13-6","soft":false,"total":13,"up":6,"ev":{"stand":-0.1537,"hit":-0.2356,"double":-0.4713},"best":"stand","gap2":0.0819,"spread":0.3176,"stand":[0.423,0,0.577],"trap":false,"instinct":"stand"},{"id":"h13-7","soft":false,"total":13,"up":7,"ev":{"stand":-0.4754,"hit":-0.2691,"double":-0.5874},"best":"hit","gap2":0.2063,"spread":0.3184,"stand":[0.262,0,0.738],"trap":false,"instinct":"hit"},{"id":"h13-8","soft":false,"total":13,"up":8,"ev":{"stand":-0.5105,"hit":-0.3236,"double":-0.691},"best":"hit","gap2":0.1869,"spread":0.3674,"stand":[0.245,0,0.755],"trap":false,"instinct":"hit"},{"id":"h13-9","soft":false,"total":13,"up":9,"ev":{"stand":-0.5431,"hit":-0.3872,"double":-0.8078},"best":"hit","gap2":0.156,"spread":0.4206,"stand":[0.228,0,0.772],"trap":false,"instinct":"hit"},{"id":"h13-10","soft":false,"total":13,"up":10,"ev":{"stand":-0.5404,"hit":-0.4253,"double":-0.8675},"best":"hit","gap2":0.1152,"spread":0.4423,"stand":[0.23,0,0.77],"trap":false,"instinct":"hit"},{"id":"h13-11","soft":false,"total":13,"up":11,"ev":{"stand":-0.667,"hit":-0.3969,"double":-0.8806},"best":"hit","gap2":0.27,"spread":0.4837,"stand":[0.167,0,0.833],"trap":false,"instinct":"hit"},{"id":"h14-2","soft":false,"total":14,"up":2,"ev":{"stand":-0.2928,"hit":-0.3622,"double":-0.7244},"best":"stand","gap2":0.0694,"spread":0.4316,"stand":[0.354,0,0.646],"trap":false,"instinct":"stand"},{"id":"h14-3","soft":false,"total":14,"up":3,"ev":{"stand":-0.2523,"hit":-0.3487,"double":-0.6975},"best":"stand","gap2":0.0965,"spread":0.4452,"stand":[0.374,0,0.626],"trap":false,"instinct":"stand"},{"id":"h14-4","soft":false,"total":14,"up":4,"ev":{"stand":-0.2111,"hit":-0.3349,"double":-0.6698},"best":"stand","gap2":0.1238,"spread":0.4588,"stand":[0.394,0,0.606],"trap":false,"instinct":"stand"},{"id":"h14-5","soft":false,"total":14,"up":5,"ev":{"stand":-0.1672,"hit":-0.3214,"double":-0.6428},"best":"stand","gap2":0.1542,"spread":0.4756,"stand":[0.416,0,0.584],"trap":false,"instinct":"stand"},{"id":"h14-6","soft":false,"total":14,"up":6,"ev":{"stand":-0.1537,"hit":-0.3007,"double":-0.6015},"best":"stand","gap2":0.147,"spread":0.4478,"stand":[0.423,0,0.577],"trap":false,"instinct":"stand"},{"id":"h14-7","soft":false,"total":14,"up":7,"ev":{"stand":-0.4754,"hit":-0.3213,"double":-0.6681},"best":"hit","gap2":0.1541,"spread":0.3469,"stand":[0.262,0,0.738],"trap":false,"instinct":"hit"},{"id":"h14-8","soft":false,"total":14,"up":8,"ev":{"stand":-0.5105,"hit":-0.3719,"double":-0.7663},"best":"hit","gap2":0.1386,"spread":0.3944,"stand":[0.245,0,0.755],"trap":false,"instinct":"hit"},{"id":"h14-9","soft":false,"total":14,"up":9,"ev":{"stand":-0.5431,"hit":-0.4309,"double":-0.8781},"best":"hit","gap2":0.1122,"spread":0.4471,"stand":[0.228,0,0.772],"trap":false,"instinct":"hit"},{"id":"h14-10","soft":false,"total":14,"up":10,"ev":{"stand":-0.5404,"hit":-0.4663,"double":-0.9382},"best":"hit","gap2":0.0741,"spread":0.4719,"stand":[0.23,0,0.77],"trap":false,"instinct":"hit"},{"id":"h14-11","soft":false,"total":14,"up":11,"ev":{"stand":-0.667,"hit":-0.44,"double":-0.9318},"best":"hit","gap2":0.2269,"spread":0.4918,"stand":[0.167,0,0.833],"trap":false,"instinct":"hit"},{"id":"h15-2","soft":false,"total":15,"up":2,"ev":{"stand":-0.2928,"hit":-0.4166,"double":-0.8332},"best":"stand","gap2":0.1238,"spread":0.5404,"stand":[0.354,0,0.646],"trap":false,"instinct":"stand"},{"id":"h15-3","soft":false,"total":15,"up":3,"ev":{"stand":-0.2523,"hit":-0.4062,"double":-0.8125},"best":"stand","gap2":0.154,"spread":0.5602,"stand":[0.374,0,0.626],"trap":false,"instinct":"stand"},{"id":"h15-4","soft":false,"total":15,"up":4,"ev":{"stand":-0.2111,"hit":-0.3956,"double":-0.7912},"best":"stand","gap2":0.1845,"spread":0.5801,"stand":[0.394,0,0.606],"trap":false,"instinct":"stand"},{"id":"h15-5","soft":false,"total":15,"up":5,"ev":{"stand":-0.1672,"hit":-0.3855,"double":-0.7709},"best":"stand","gap2":0.2183,"spread":0.6037,"stand":[0.416,0,0.584],"trap":false,"instinct":"stand"},{"id":"h15-6","soft":false,"total":15,"up":6,"ev":{"stand":-0.1537,"hit":-0.3658,"double":-0.7317},"best":"stand","gap2":0.2121,"spread":0.578,"stand":[0.423,0,0.577],"trap":false,"instinct":"stand"},{"id":"h15-7","soft":false,"total":15,"up":7,"ev":{"stand":-0.4754,"hit":-0.3698,"double":-0.7488},"best":"hit","gap2":0.1056,"spread":0.3791,"stand":[0.262,0,0.738],"trap":false,"instinct":"hit"},{"id":"h15-8","soft":false,"total":15,"up":8,"ev":{"stand":-0.5105,"hit":-0.4168,"double":-0.8416},"best":"hit","gap2":0.0937,"spread":0.4248,"stand":[0.245,0,0.755],"trap":false,"instinct":"hit"},{"id":"h15-9","soft":false,"total":15,"up":9,"ev":{"stand":-0.5431,"hit":-0.4716,"double":-0.9484},"best":"hit","gap2":0.0716,"spread":0.4768,"stand":[0.228,0,0.772],"trap":false,"instinct":"hit"},{"id":"h15-10","soft":false,"total":15,"up":10,"ev":{"stand":-0.5404,"hit":-0.5044,"double":-1.0089},"best":"hit","gap2":0.036,"spread":0.5045,"stand":[0.23,0,0.77],"trap":false,"instinct":"hit"},{"id":"h15-11","soft":false,"total":15,"up":11,"ev":{"stand":-0.667,"hit":-0.48,"double":-0.9831},"best":"hit","gap2":0.1869,"spread":0.5031,"stand":[0.167,0,0.833],"trap":false,"instinct":"hit"},{"id":"h16-2","soft":false,"total":16,"up":2,"ev":{"stand":-0.2928,"hit":-0.471,"double":-0.942},"best":"stand","gap2":0.1782,"spread":0.6492,"stand":[0.354,0,0.646],"trap":false,"instinct":"stand"},{"id":"h16-3","soft":false,"total":16,"up":3,"ev":{"stand":-0.2523,"hit":-0.4638,"double":-0.9275},"best":"stand","gap2":0.2115,"spread":0.6753,"stand":[0.374,0,0.626],"trap":false,"instinct":"stand"},{"id":"h16-4","soft":false,"total":16,"up":4,"ev":{"stand":-0.2111,"hit":-0.4563,"double":-0.9126},"best":"stand","gap2":0.2452,"spread":0.7015,"stand":[0.394,0,0.606],"trap":false,"instinct":"stand"},{"id":"h16-5","soft":false,"total":16,"up":5,"ev":{"stand":-0.1672,"hit":-0.4495,"double":-0.899},"best":"stand","gap2":0.2823,"spread":0.7318,"stand":[0.416,0,0.584],"trap":false,"instinct":"stand"},{"id":"h16-6","soft":false,"total":16,"up":6,"ev":{"stand":-0.1537,"hit":-0.4309,"double":-0.8619},"best":"stand","gap2":0.2772,"spread":0.7082,"stand":[0.423,0,0.577],"trap":false,"instinct":"stand"},{"id":"h16-7","soft":false,"total":16,"up":7,"ev":{"stand":-0.4754,"hit":-0.4148,"double":-0.8296},"best":"hit","gap2":0.0606,"spread":0.4148,"stand":[0.262,0,0.738],"trap":false,"instinct":"hit"},{"id":"h16-8","soft":false,"total":16,"up":8,"ev":{"stand":-0.5105,"hit":-0.4584,"double":-0.9169},"best":"hit","gap2":0.0521,"spread":0.4584,"stand":[0.245,0,0.755],"trap":false,"instinct":"hit"},{"id":"h16-9","soft":false,"total":16,"up":9,"ev":{"stand":-0.5431,"hit":-0.5093,"double":-1.0186},"best":"hit","gap2":0.0338,"spread":0.5093,"stand":[0.228,0,0.772],"trap":false,"instinct":"hit"},{"id":"h16-11","soft":false,"total":16,"up":11,"ev":{"stand":-0.667,"hit":-0.5171,"double":-1.0343},"best":"hit","gap2":0.1498,"spread":0.5171,"stand":[0.167,0,0.833],"trap":false,"instinct":"hit"},{"id":"s13-2","soft":true,"total":13,"up":2,"ev":{"stand":-0.2928,"hit":0.0466,"double":-0.0716},"best":"hit","gap2":0.1182,"spread":0.3394,"stand":[0.354,0,0.646],"trap":false,"instinct":"hit"},{"id":"s13-3","soft":true,"total":13,"up":3,"ev":{"stand":-0.2523,"hit":0.0741,"double":-0.0072},"best":"hit","gap2":0.0813,"spread":0.3264,"stand":[0.374,0,0.626],"trap":false,"instinct":"hit"},{"id":"s13-4","soft":true,"total":13,"up":4,"ev":{"stand":-0.2111,"hit":0.1025,"double":0.0584},"best":"hit","gap2":0.0441,"spread":0.3135,"stand":[0.394,0,0.606],"trap":false,"instinct":"hit"},{"id":"s13-6","soft":true,"total":13,"up":6,"ev":{"stand":-0.1537,"hit":0.1617,"double":0.1797},"best":"double","gap2":0.0181,"spread":0.3334,"stand":[0.423,0,0.577],"trap":true,"instinct":"hit"},{"id":"s13-7","soft":true,"total":13,"up":7,"ev":{"stand":-0.4754,"hit":0.1224,"double":-0.1839},"best":"hit","gap2":0.3063,"spread":0.5978,"stand":[0.262,0,0.738],"trap":false,"instinct":"hit"},{"id":"s13-8","soft":true,"total":13,"up":8,"ev":{"stand":-0.5105,"hit":0.0541,"double":-0.3144},"best":"hit","gap2":0.3685,"spread":0.5646,"stand":[0.245,0,0.755],"trap":false,"instinct":"hit"},{"id":"s13-9","soft":true,"total":13,"up":9,"ev":{"stand":-0.5431,"hit":-0.0377,"double":-0.4564},"best":"hit","gap2":0.4187,"spread":0.5055,"stand":[0.228,0,0.772],"trap":false,"instinct":"hit"},{"id":"s13-10","soft":true,"total":13,"up":10,"ev":{"stand":-0.5404,"hit":-0.1049,"double":-0.514},"best":"hit","gap2":0.4092,"spread":0.4356,"stand":[0.23,0,0.77],"trap":false,"instinct":"hit"},{"id":"s13-11","soft":true,"total":13,"up":11,"ev":{"stand":-0.667,"hit":-0.0573,"double":-0.6244},"best":"hit","gap2":0.5671,"spread":0.6096,"stand":[0.167,0,0.833],"trap":false,"instinct":"hit"},{"id":"s14-2","soft":true,"total":14,"up":2,"ev":{"stand":-0.2928,"hit":0.0224,"double":-0.0716},"best":"hit","gap2":0.094,"spread":0.3152,"stand":[0.354,0,0.646],"trap":false,"instinct":"hit"},{"id":"s14-3","soft":true,"total":14,"up":3,"ev":{"stand":-0.2523,"hit":0.0508,"double":-0.0072},"best":"hit","gap2":0.058,"spread":0.3031,"stand":[0.374,0,0.626],"trap":false,"instinct":"hit"},{"id":"s14-4","soft":true,"total":14,"up":4,"ev":{"stand":-0.2111,"hit":0.0801,"double":0.0584},"best":"hit","gap2":0.0217,"spread":0.2911,"stand":[0.394,0,0.606],"trap":false,"instinct":"hit"},{"id":"s14-5","soft":true,"total":14,"up":5,"ev":{"stand":-0.1672,"hit":0.1119,"double":0.126},"best":"double","gap2":0.0141,"spread":0.2931,"stand":[0.416,0,0.584],"trap":true,"instinct":"hit"},{"id":"s14-6","soft":true,"total":14,"up":6,"ev":{"stand":-0.1537,"hit":0.1392,"double":0.1797},"best":"double","gap2":0.0406,"spread":0.3334,"stand":[0.423,0,0.577],"trap":true,"instinct":"hit"},{"id":"s14-7","soft":true,"total":14,"up":7,"ev":{"stand":-0.4754,"hit":0.0795,"double":-0.1839},"best":"hit","gap2":0.2634,"spread":0.5549,"stand":[0.262,0,0.738],"trap":false,"instinct":"hit"},{"id":"s14-8","soft":true,"total":14,"up":8,"ev":{"stand":-0.5105,"hit":0.0133,"double":-0.3144},"best":"hit","gap2":0.3277,"spread":0.5238,"stand":[0.245,0,0.755],"trap":false,"instinct":"hit"},{"id":"s14-9","soft":true,"total":14,"up":9,"ev":{"stand":-0.5431,"hit":-0.0752,"double":-0.4564},"best":"hit","gap2":0.3812,"spread":0.468,"stand":[0.228,0,0.772],"trap":false,"instinct":"hit"},{"id":"s14-10","soft":true,"total":14,"up":10,"ev":{"stand":-0.5404,"hit":-0.1395,"double":-0.514},"best":"hit","gap2":0.3746,"spread":0.401,"stand":[0.23,0,0.77],"trap":false,"instinct":"hit"},{"id":"s14-11","soft":true,"total":14,"up":11,"ev":{"stand":-0.667,"hit":-0.0939,"double":-0.6244},"best":"hit","gap2":0.5305,"spread":0.5731,"stand":[0.167,0,0.833],"trap":false,"instinct":"hit"},{"id":"s15-2","soft":true,"total":15,"up":2,"ev":{"stand":-0.2928,"hit":-0.0001,"double":-0.0716},"best":"hit","gap2":0.0714,"spread":0.2927,"stand":[0.354,0,0.646],"trap":false,"instinct":"hit"},{"id":"s15-3","soft":true,"total":15,"up":3,"ev":{"stand":-0.2523,"hit":0.0292,"double":-0.0072},"best":"hit","gap2":0.0364,"spread":0.2814,"stand":[0.374,0,0.626],"trap":false,"instinct":"hit"},{"id":"s15-5","soft":true,"total":15,"up":5,"ev":{"stand":-0.1672,"hit":0.092,"double":0.126},"best":"double","gap2":0.034,"spread":0.2931,"stand":[0.416,0,0.584],"trap":true,"instinct":"hit"},{"id":"s15-6","soft":true,"total":15,"up":6,"ev":{"stand":-0.1537,"hit":0.1182,"double":0.1797},"best":"double","gap2":0.0615,"spread":0.3334,"stand":[0.423,0,0.577],"trap":true,"instinct":"hit"},{"id":"s15-7","soft":true,"total":15,"up":7,"ev":{"stand":-0.4754,"hit":0.037,"double":-0.1839},"best":"hit","gap2":0.2209,"spread":0.5124,"stand":[0.262,0,0.738],"trap":false,"instinct":"hit"},{"id":"s15-8","soft":true,"total":15,"up":8,"ev":{"stand":-0.5105,"hit":-0.0271,"double":-0.3144},"best":"hit","gap2":0.2874,"spread":0.4835,"stand":[0.245,0,0.755],"trap":false,"instinct":"hit"},{"id":"s15-9","soft":true,"total":15,"up":9,"ev":{"stand":-0.5431,"hit":-0.1122,"double":-0.4564},"best":"hit","gap2":0.3442,"spread":0.431,"stand":[0.228,0,0.772],"trap":false,"instinct":"hit"},{"id":"s15-10","soft":true,"total":15,"up":10,"ev":{"stand":-0.5404,"hit":-0.1737,"double":-0.514},"best":"hit","gap2":0.3403,"spread":0.3667,"stand":[0.23,0,0.77],"trap":false,"instinct":"hit"},{"id":"s15-11","soft":true,"total":15,"up":11,"ev":{"stand":-0.667,"hit":-0.13,"double":-0.6244},"best":"hit","gap2":0.4944,"spread":0.5369,"stand":[0.167,0,0.833],"trap":false,"instinct":"hit"},{"id":"s16-2","soft":true,"total":16,"up":2,"ev":{"stand":-0.2928,"hit":-0.021,"double":-0.0716},"best":"hit","gap2":0.0505,"spread":0.2718,"stand":[0.354,0,0.646],"trap":false,"instinct":"hit"},{"id":"s16-3","soft":true,"total":16,"up":3,"ev":{"stand":-0.2523,"hit":0.0091,"double":-0.0072},"best":"hit","gap2":0.0163,"spread":0.2613,"stand":[0.374,0,0.626],"trap":false,"instinct":"hit"},{"id":"s16-4","soft":true,"total":16,"up":4,"ev":{"stand":-0.2111,"hit":0.04,"double":0.0584},"best":"double","gap2":0.0185,"spread":0.2695,"stand":[0.394,0,0.606],"trap":true,"instinct":"hit"},{"id":"s16-5","soft":true,"total":16,"up":5,"ev":{"stand":-0.1672,"hit":0.0734,"double":0.126},"best":"double","gap2":0.0525,"spread":0.2931,"stand":[0.416,0,0.584],"trap":true,"instinct":"hit"},{"id":"s16-6","soft":true,"total":16,"up":6,"ev":{"stand":-0.1537,"hit":0.0988,"double":0.1797},"best":"double","gap2":0.0809,"spread":0.3334,"stand":[0.423,0,0.577],"trap":true,"instinct":"hit"},{"id":"s16-7","soft":true,"total":16,"up":7,"ev":{"stand":-0.4754,"hit":-0.0049,"double":-0.1839},"best":"hit","gap2":0.179,"spread":0.4705,"stand":[0.262,0,0.738],"trap":false,"instinct":"hit"},{"id":"s16-8","soft":true,"total":16,"up":8,"ev":{"stand":-0.5105,"hit":-0.0668,"double":-0.3144},"best":"hit","gap2":0.2476,"spread":0.4437,"stand":[0.245,0,0.755],"trap":false,"instinct":"hit"},{"id":"s16-9","soft":true,"total":16,"up":9,"ev":{"stand":-0.5431,"hit":-0.1486,"double":-0.4564},"best":"hit","gap2":0.3077,"spread":0.3945,"stand":[0.228,0,0.772],"trap":false,"instinct":"hit"},{"id":"s16-10","soft":true,"total":16,"up":10,"ev":{"stand":-0.5404,"hit":-0.2074,"double":-0.514},"best":"hit","gap2":0.3066,"spread":0.333,"stand":[0.23,0,0.77],"trap":false,"instinct":"hit"},{"id":"s16-11","soft":true,"total":16,"up":11,"ev":{"stand":-0.667,"hit":-0.1656,"double":-0.6244},"best":"hit","gap2":0.4588,"spread":0.5013,"stand":[0.167,0,0.833],"trap":false,"instinct":"hit"},{"id":"s17-3","soft":true,"total":17,"up":3,"ev":{"stand":-0.1172,"hit":0.029,"double":0.0551},"best":"double","gap2":0.0261,"spread":0.1723,"stand":[0.374,0.135,0.491],"trap":true,"instinct":"hit"},{"id":"s17-4","soft":true,"total":17,"up":4,"ev":{"stand":-0.0806,"hit":0.0593,"double":0.1187},"best":"double","gap2":0.0593,"spread":0.1992,"stand":[0.394,0.13,0.475],"trap":true,"instinct":"hit"},{"id":"s17-5","soft":true,"total":17,"up":5,"ev":{"stand":-0.0449,"hit":0.0912,"double":0.1824},"best":"double","gap2":0.0912,"spread":0.2273,"stand":[0.416,0.122,0.461],"trap":true,"instinct":"hit"},{"id":"s17-6","soft":true,"total":17,"up":6,"ev":{"stand":0.0117,"hit":0.1281,"double":0.2561},"best":"double","gap2":0.1281,"spread":0.2444,"stand":[0.423,0.165,0.411],"trap":true,"instinct":"hit"},{"id":"s17-7","soft":true,"total":17,"up":7,"ev":{"stand":-0.1068,"hit":0.0538,"double":-0.0138},"best":"hit","gap2":0.0676,"spread":0.1606,"stand":[0.262,0.369,0.369],"trap":false,"instinct":"hit"},{"id":"s17-8","soft":true,"total":17,"up":8,"ev":{"stand":-0.382,"hit":-0.0729,"double":-0.2551},"best":"hit","gap2":0.1822,"spread":0.309,"stand":[0.245,0.129,0.627],"trap":false,"instinct":"hit"},{"id":"s17-9","soft":true,"total":17,"up":9,"ev":{"stand":-0.4232,"hit":-0.1498,"double":-0.401},"best":"hit","gap2":0.2512,"spread":0.2734,"stand":[0.228,0.12,0.652],"trap":false,"instinct":"hit"},{"id":"s17-10","soft":true,"total":17,"up":10,"ev":{"stand":-0.4197,"hit":-0.1969,"double":-0.4583},"best":"hit","gap2":0.2229,"spread":0.2614,"stand":[0.23,0.121,0.65],"trap":false,"instinct":"hit"},{"id":"s17-11","soft":true,"total":17,"up":11,"ev":{"stand":-0.478,"hit":-0.1796,"double":-0.5372},"best":"hit","gap2":0.2985,"spread":0.3576,"stand":[0.167,0.189,0.645],"trap":false,"instinct":"hit"},{"id":"s18-3","soft":true,"total":18,"up":3,"ev":{"stand":0.1483,"hit":0.0902,"double":0.1776},"best":"double","gap2":0.0293,"spread":0.0874,"stand":[0.509,0.13,0.361],"trap":true,"instinct":"stand"},{"id":"s18-4","soft":true,"total":18,"up":4,"ev":{"stand":0.1759,"hit":0.1185,"double":0.237},"best":"double","gap2":0.0611,"spread":0.1185,"stand":[0.525,0.126,0.349],"trap":true,"instinct":"stand"},{"id":"s18-5","soft":true,"total":18,"up":5,"ev":{"stand":0.1996,"hit":0.1476,"double":0.2952},"best":"double","gap2":0.0957,"spread":0.1476,"stand":[0.539,0.122,0.339],"trap":true,"instinct":"stand"},{"id":"s18-6","soft":true,"total":18,"up":6,"ev":{"stand":0.2834,"hit":0.1908,"double":0.3815},"best":"double","gap2":0.0981,"spread":0.1908,"stand":[0.589,0.106,0.305],"trap":true,"instinct":"stand"},{"id":"s18-7","soft":true,"total":18,"up":7,"ev":{"stand":0.3996,"hit":0.1707,"double":0.2199},"best":"stand","gap2":0.1796,"spread":0.2289,"stand":[0.631,0.138,0.231],"trap":false,"instinct":"stand"},{"id":"s18-8","soft":true,"total":18,"up":8,"ev":{"stand":0.106,"hit":0.0397,"double":-0.0299},"best":"stand","gap2":0.0663,"spread":0.1359,"stand":[0.373,0.359,0.267],"trap":false,"instinct":"stand"},{"id":"s18-9","soft":true,"total":18,"up":9,"ev":{"stand":-0.1832,"hit":-0.1007,"double":-0.2902},"best":"hit","gap2":0.0824,"spread":0.1895,"stand":[0.348,0.12,0.532],"trap":true,"instinct":"stand"},{"id":"s18-10","soft":true,"total":18,"up":10,"ev":{"stand":-0.1783,"hit":-0.1438,"double":-0.3469},"best":"hit","gap2":0.0345,"spread":0.2031,"stand":[0.35,0.121,0.529],"trap":true,"instinct":"stand"}],"bust":{"2":0.3536,"3":0.3739,"4":0.3945,"5":0.4164,"6":0.4232,"7":0.2623,"8":0.2447,"9":0.2284,"10":0.2298,"A":0.1665}};
+var H = POOL.hands, BUST = POOL.bust;
+var CFG = {minSample:50, weights:[1,1,1.5,1.5,2], floor:0.15, tie:0.01, streakMin:80, epoch:Date.UTC(2026,9,9), keep:14};
+var FEATURES = {streak:true};   /* streak:false removes every streak mention (pending compliance decision) */
+var DEBUG = /[?&]debug\b/.test(location.search) || !!window.claude;   /* reset + sample-data tools: add ?debug to the address, or run inside Claude */
+var ACT = {H:'hit', S:'stand', D:'double'};
+var CODE = {hit:'H', stand:'S', double:'D'};
+var AGG = {stand:0, hit:1, double:2};
+var NAMES = {A:'Ace',J:'Jack',Q:'Queen',K:'King','2':'Two','3':'Three','4':'Four','5':'Five','6':'Six','7':'Seven','8':'Eight','9':'Nine','10':'Ten'};
+var SUITN = {'♠':'spades','♥':'hearts','♦':'diamonds','♣':'clubs'};
+
+/* ---------- helpers ---------- */
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+function upName(u){return u===11?'A':String(u)}
+function ev2(n){return (n>=0?'+':'\u2212')+Math.abs(n).toFixed(2)}
+function pct(x){return Math.round(x*100)}
+function desc(h){return (h.soft?'Soft ':'Hard ')+h.total}
+function dayOf(ms){return new Date(ms).toISOString().slice(0,10)}
+function today(){return dayOf(Date.now())}
+function prevDay(d){return dayOf(Date.parse(d+'T00:00:00Z')-864e5)}
+function dayNum(d){return Math.max(1,Math.floor((Date.parse(d+'T00:00:00Z')-CFG.epoch)/864e5)+1)}
+function weekStart(d){var t=new Date(d+'T00:00:00Z');var wd=(t.getUTCDay()+6)%7;t.setUTCDate(t.getUTCDate()-wd);return t.toISOString().slice(0,10)}
+function niceDate(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-IE',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'})}
+function say(t){var l=document.getElementById('live');if(l){l.textContent='';setTimeout(function(){l.textContent=t},30)}}
+
+function xmur(str){var h=1779033703^str.length;for(var i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19}return function(){h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);return (h^=h>>>16)>>>0}}
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function rngFor(s){return mulberry(xmur(s)())}
+
+/* ---------- storage (local first, shared db when available) ---------- */
+var memStore=null;
+var persist=(function(){try{localStorage.setItem('dailyhand.t','1');localStorage.removeItem('dailyhand.t');return true}catch(e){return false}})();
+function underFlag(){try{return sessionStorage.getItem('dailyhand.under')==='1'}catch(e){return false}}
+function loadLocal(){try{var r=localStorage.getItem('dailyhand.v1');return r?JSON.parse(r):null}catch(e){return memStore}}
+function saveLocal(){try{localStorage.setItem('dailyhand.v1',JSON.stringify(SV))}catch(e){memStore=SV}}
+var SV=(function(){var o=loadLocal()||{};return {age:!!o.age,nick:o.nick||'',days:o.days||{}}})();
+
+/* ---------- game logic ---------- */
+function tier(h){if(!h.trap&&h.gap2>=0.12)return 0;if(h.gap2<0.08)return 2;return 1}
+function rankLabel(v,rnd){if(v===11)return 'A';if(v===10)return ['10','J','Q','K'][Math.floor(rnd()*4)];return String(v)}
+function mkCard(v,rnd){var s=['♠','♥','♦','♣'][Math.floor(rnd()*4)];return {v:v,r:rankLabel(v,rnd),s:s}}
+function deal(h,rnd){
+  var a,b;
+  if(h.soft){a=11;b=h.total-11}
+  else{var opts=[];for(var x=2;x<=10;x++){var y=h.total-x;if(y>=2&&y<=10&&x<y)opts.push([x,y])}
+    var o=opts[Math.floor(rnd()*opts.length)];if(rnd()<.5){a=o[0];b=o[1]}else{a=o[1];b=o[0]}}
+  return {h:h,player:[mkCard(a,rnd),mkCard(b,rnd)],up:mkCard(h.up,rnd)};
+}
+function buildDay(seed){
+  var rnd=rngFor('dailyhand|'+seed);
+  var pools=[0,1,2].map(function(t){return H.filter(function(h){return tier(h)===t})});
+  var plan=[0,0,1,1,2], chosen;
+  for(var attempt=0;attempt<60;attempt++){
+    chosen=[];var seen={};
+    for(var k=0;k<plan.length;k++){
+      var p=pools[plan[k]],c,g=0;
+      do{c=p[Math.floor(rnd()*p.length)];g++}while((seen[c.id]||seen[c.total+'-'+c.soft])&&g<40);
+      seen[c.id]=1;seen[c.total+'-'+c.soft]=1;chosen.push(c);
+    }
+    var kinds={};chosen.forEach(function(c){kinds[c.best]=1});
+    if(Object.keys(kinds).length>=2)break;
+  }
+  return chosen.map(function(h){return deal(h,rnd)});
+}
+function handScore(h,action){var loss=h.ev[h.best]-h.ev[action];var gap=Math.max(h.spread,CFG.floor);return Math.max(0,100*(1-loss/gap))}
+function isRight(h,action){return h.ev[h.best]-h.ev[action]<CFG.tie}
+function verdict(h,action){if(isRight(h,action))return 'g';return handScore(h,action)>=50?'y':'r'}
+function summarise(deals,codes){
+  return deals.map(function(d,i){var a=ACT[codes[i]];return {h:d.h,i:i,code:codes[i],action:a,right:isRight(d.h,a),score:handScore(d.h,a),v:verdict(d.h,a)}});
+}
+function dayScore(rows){var w=0,t=0;rows.forEach(function(r,i){w+=CFG.weights[i];t+=CFG.weights[i]*r.score});return Math.round(t/w*10)/10}
+function styleOf(rows){
+  var c=0,b=0,miss=0;
+  rows.forEach(function(r){if(!r.right){miss++;var d=AGG[r.action]-AGG[r.h.best];if(d<0)c++;else if(d>0)b++}});
+  if(miss===0)return 'textbook';if(c>b)return 'cautious';if(b>c)return 'bold';return 'balanced';
+}
+var STYLES={
+  textbook:{n:'The Textbook',t:'Every hand played the way the chart plays it.'},
+  cautious:{n:'The Cautious One',t:'When you missed, you usually played safer than the chart: standing early or skipping the double.'},
+  bold:{n:'The Risk Taker',t:'When you missed, you usually pushed harder than the chart: hitting or doubling when it says hold back.'},
+  balanced:{n:'Down the Middle',t:'Your misses went both ways, so there is no single habit to fix.'}
+};
+function streak(){
+  var d=today();var e=SV.days[d];if(!(e&&e.s!=null))d=prevDay(d);
+  var n=0;while(SV.days[d]&&SV.days[d].s!=null&&SV.days[d].s>=CFG.streakMin){n++;d=prevDay(d)}return n;
+}
+function avgWindow(from,len){
+  var sum=0,n=0,d=from;for(var i=0;i<len;i++){var e=SV.days[d];if(e&&e.s!=null){sum+=e.s;n++}d=prevDay(d)}return {n:n,avg:n?sum/n:0};
+}
+
+/* ---------- facts (config; every fact carries a source / review status) ---------- */
+function bustPct(u){return Math.round(BUST[upName(u)]*100)}
+var FACTS=[
+ {id:'bust',type:'why',src:'engine',when:function(h){return h.up<=6||h.up>=10},text:function(h){var cmp=[6,10,11].filter(function(x){return x!==h.up}).map(function(x){return (x===11?'an Ace':'a '+x)+' about '+bustPct(x)+'%'});return 'A dealer showing '+upName(h.up)+' busts about '+bustPct(h.up)+'% of the time. For comparison: '+cmp.join(', ')+'.'}},
+ {id:'weak',type:'why',src:'review',when:function(){return true},text:function(){return 'Most of the chart hinges on one question: is the dealer\u2019s card weak (2 to 6) or strong (7 through Ace)?'}},
+ {id:'ev',type:'why',src:'review',when:function(){return true},text:function(){return 'Expected value is your average result if you faced the same spot thousands of times. A good decision can still lose this hand, and that is not a mistake.'}},
+ {id:'soft',type:'why',src:'review',when:function(h){return h.soft},text:function(){return 'A soft hand counts an Ace as 11. Because the Ace can drop to 1, one more card can never bust a soft hand, which is why hitting and doubling soft totals carries less risk.'}},
+ {id:'dbl',type:'why',src:'review',when:function(h){return h.best==='double'&&!h.soft},text:function(){return 'Doubling is strongest when one more card is likely to give you a big total and the dealer is weak. Hard 11 against a 6 is the classic case.'}},
+ {id:'s17',type:'why',src:'review',when:function(){return true},text:function(){return 'Basic strategy shifts slightly with the table rules. This game assumes the dealer stands on every 17; where the dealer hits soft 17, a few plays change.'}},
+ {id:'s18',type:'myth',src:'engine',when:function(h){return h.soft&&h.total===18&&(h.up===9||h.up===10)},text:function(){return 'Soft 18 sounds strong, so many players stand against a 9 or 10. Hitting is the better play, because the Ace means no card can bust you.'}},
+ {id:'h12',type:'myth',src:'engine',when:function(h){return !h.soft&&h.total===12&&h.up<=3},text:function(){return 'Hitting a 12 against a dealer 2 or 3 feels reckless. It is the better play, but only by a small margin.'}},
+ {id:'h16',type:'myth',src:'engine',when:function(h){return !h.soft&&h.total>=15&&h.up>=7},text:function(){return 'Standing on 16 against a dealer 10 feels safe, but it is close to a coin flip. In this model hitting and standing are within 0.01 of each other, and both lose far more than they win.'}},
+ {id:'bj',type:'trivia',src:'engine',when:function(){return true},text:function(){return 'About 1 starting hand in 21 (4.7%) is a natural blackjack, an Ace plus a ten-value card.'}},
+ {id:'name',type:'trivia',src:'verify',when:function(){return true},text:function(){return 'The game was once simply called twenty-one. One popular story links the name \u201Cblackjack\u201D to a bonus for an Ace of spades with a black Jack, though sources differ.'}},
+ {id:'1956',type:'trivia',src:'verify',when:function(){return true},text:function(){return 'In 1956 four US Army engineers published the first mathematically derived blackjack strategy, working it out on desk calculators.'}},
+ {id:'edge',type:'honest',src:'verify',when:function(){return true},text:function(){return 'Basic strategy lowers the house edge. It does not remove it, and perfect play still loses plenty of hands.'}},
+ {id:'quiz',type:'honest',src:'review',when:function(){return true},text:function(){return 'This game scores decisions, not outcomes. No cards are dealt after you choose, so luck cannot change your score.'}}
+];
+var FACT_LEAD={why:'Why it works.',myth:'Myth.',trivia:'Did you know?',honest:'Worth remembering.'};
+function pickFacts(deals,day){
+  var rnd=rngFor('facts|'+day),order=['trivia','myth','why','honest','why'],used={},out=[];
+  var bank=FACTS.slice().sort(function(){return rnd()-.5});
+  deals.forEach(function(d,i){
+    var f=bank.filter(function(x){return !used[x.id]&&x.type===order[i]&&x.when(d.h)})[0]
+      ||bank.filter(function(x){return !used[x.id]&&x.when(d.h)})[0]||bank[0];
+    used[f.id]=1;out.push(f);
+  });
+  return out;
+}
+function whyLine(h){
+  var u=upName(h.up),b=bustPct(h.up),w=pct(h.stand[0]),l=pct(h.stand[2]),hd=desc(h),lo=hd.toLowerCase();
+  if(h.best==='double')return 'Dealer shows '+u+' and busts '+b+'% of the time. '+hd+' is a strong spot to take exactly one card and let the hand count twice.'+(h.soft?' A soft hand cannot bust on one card, so the downside is small.':'');
+  if(h.best==='stand')return h.soft?'Dealer shows '+u+'. '+hd+' already beats most of the dealer\u2019s finishing totals, so another card gives more away than it gains.':'Dealer shows '+u+' and busts '+b+'% of the time. Hitting '+lo+' risks busting first, so let the dealer take the risk.';
+  if(h.soft)return 'A soft hand cannot bust on the next card, so hitting is low risk. Standing on '+lo+' against '+u+' wins '+w+'% and loses '+l+'%, so improving is worth it.';
+  if(h.up>=7)return 'Dealer shows '+u+', a strong card that busts only '+b+'% of the time. Standing on '+h.total+' would win '+w+'% and lose '+l+'%, so you need to improve.';
+  return hd+' against a '+u+' sits just on the hitting side of the line. Hitting beats standing by '+(h.ev.hit-h.ev.stand).toFixed(2)+', a small edge.';
+}
+
+/* ---------- crowd stats (from shared db) ---------- */
+var DB=null,UID=null,PLAYS=[],dbState='pending',dbNote='';
+var SAMPLE=false;
+function crowdFor(day){
+  var per=[0,1,2,3,4].map(function(){return {n:0,H:0,S:0,D:0}});
+  var scores=[],styles={textbook:0,cautious:0,bold:0,balanced:0};
+  PLAYS.forEach(function(p){
+    var e=p.data&&p.data.days&&p.data.days[day];if(!e||!Array.isArray(e.a))return;
+    e.a.forEach(function(c,i){if(i<5&&per[i][c]!==undefined){per[i].n++;per[i][c]++}});
+    if(typeof e.s==='number'&&e.a.length===5){scores.push(e.s);if(styles[e.st]!==undefined)styles[e.st]++}
+  });
+  return {per:per,scores:scores,styles:styles};
+}
+function sampleCrowd(day,deals){
+  var rnd=rngFor('sample|'+day),per=[],scores=[],n=240;
+  deals.forEach(function(d){
+    var p={H:.2,S:.2,D:.2};p[CODE[d.h.instinct]]+=.3;p[CODE[d.h.best]]+=.15;
+    var t=p.H+p.S+p.D,o={n:n};['H','S','D'].forEach(function(k){o[k]=Math.round(n*(p[k]/t)*(0.9+rnd()*.2))});per.push(o);
+  });
+  for(var i=0;i<n;i++)scores.push(Math.round((58+rnd()*42)*10)/10);
+  return {per:per,scores:scores,styles:{textbook:30,cautious:98,bold:64,balanced:48}};
+}
+function getCrowd(day,deals){return SAMPLE?sampleCrowd(day,deals):crowdFor(day)}
+
+/* ---------- nicknames ---------- */
+var BLOCK=['fuck','shit','cunt','nazi','rape','dick','cock','bitch','whore','slut','nigg','fag','porn','sex','hitler','http','www','dotcom','casino','bet365','kill'];
+function validNick(n){
+  if(typeof n!=='string')return false;var t=n.trim();
+  if(t.length<3||t.length>16||!/^[A-Za-z0-9 _-]+$/.test(t))return false;
+  var flat=t.toLowerCase().replace(/[^a-z0-9]/g,'');
+  return !BLOCK.some(function(b){return flat.indexOf(b)>-1});
+}
+
+/* ---------- app state ---------- */
+var S={view:underFlag()?'under':'home',round:null,boardTab:'today',nickErr:'',confirmReset:false,focus:null};
+var app=document.getElementById('app');
+
+function newRound(mode){
+  var day=today(),seed=mode==='daily'?day:'practice|'+Math.random();
+  var deals=buildDay(seed);
+  var codes=[];
+  if(mode==='daily'){var e=SV.days[day];if(e&&Array.isArray(e.a))codes=e.a.slice(0,5)}
+  var i=Math.min(codes.length,4),phase='choose',se=SV.days[day];
+  if(mode==='daily'&&se&&se.fb&&se.s==null&&codes.length>=1){i=codes.length-1;phase='feedback'}
+  return {mode:mode,day:day,deals:deals,facts:pickFacts(deals,mode==='daily'?day:seed),codes:codes,i:i,phase:phase};
+}
+function startDaily(){
+  var e=SV.days[today()];
+  if(e&&e.s!=null){go('result');return}
+  var r=newRound('daily');
+  if(r.codes.length>=5&&r.phase!=='feedback'){finish(r);return}
+  if(!SV.days[r.day]){SV.days[r.day]={a:[],ev:{st:Date.now()}};saveLocal()}
+  S.round=r;go('play');
+}
+function startPractice(){S.round=newRound('practice');go('play')}
+function choose(code){
+  var R=S.round;if(!R||R.phase!=='choose')return;
+  R.codes[R.i]=code;R.phase='feedback';
+  if(R.mode==='daily'){var e=SV.days[R.day]||(SV.days[R.day]={a:[],ev:{st:Date.now()}});e.a=R.codes.slice();e.fb=true;saveLocal()}
+  S.focus='fb';render();
+}
+function next(){
+  var R=S.round;if(!R||R.phase!=='feedback')return;
+  if(R.mode==='daily'&&SV.days[R.day]){SV.days[R.day].fb=false;saveLocal()}
+  if(R.i>=4){finish(R);return}
+  R.i++;R.phase='choose';S.focus='hand';render();
+}
+function finish(R){
+  var rows=summarise(R.deals,R.codes),score=dayScore(rows),st=styleOf(rows);
+  if(R.mode==='daily'){
+    var e=SV.days[R.day]||(SV.days[R.day]={a:[],ev:{st:Date.now()}});
+    e.a=R.codes.slice();e.fb=false;e.s=score;e.st=st;e.ev=e.ev||{};e.ev.co=Date.now();e.ev.sh=e.ev.sh||0;e.ev.ei=e.ev.ei||0;
+    saveLocal();queueSync();
+  }
+  S.round=R;R.done={rows:rows,score:score,st:st};go('result');
+}
+function go(v){S.view=v;S.nickErr='';S.confirmReset=false;S.focus='main';render();window.scrollTo(0,0)}
+
+/* ---------- shared db ---------- */
+var chain=Promise.resolve();
+function queueSync(){chain=chain.then(syncDb).catch(function(){})}
+function syncDb(){
+  if(!DB||!UID)return Promise.resolve();
+  var days={};Object.keys(SV.days).filter(function(d){return SV.days[d].s!=null}).sort().slice(-CFG.keep).forEach(function(d){var e=SV.days[d];days[d]={a:e.a,s:e.s,st:e.st,ev:e.ev||{}}});
+  var doc={v:1,nick:validNick(SV.nick)?SV.nick.trim():'',days:days,u:new Date().toISOString()};
+  return DB.doc('plays/'+UID).set(doc).then(function(){dbNote=''},function(e){dbNote='Could not save to the shared leaderboard ('+((e&&e.code)||'error')+'). Your result is still saved on this device.'});
+}
+function mergeFromDb(){
+  var mine=PLAYS.filter(function(p){return p.id===UID})[0],changed=false,needPush=false;
+  if(mine&&mine.data){
+    var d=mine.data.days||{};
+    Object.keys(d).forEach(function(k){if(!(SV.days[k]&&SV.days[k].s!=null)&&d[k]&&d[k].s!=null){SV.days[k]=d[k];changed=true}});
+    if(!SV.nick&&mine.data.nick){SV.nick=mine.data.nick;changed=true}
+  }
+  var dd=(mine&&mine.data&&mine.data.days)||{};
+  Object.keys(SV.days).forEach(function(k){if(SV.days[k].s!=null&&!(dd[k]&&dd[k].s!=null))needPush=true});
+  if(changed)saveLocal();
+  if(needPush)queueSync();
+}
+function softRefresh(){
+  if(document.activeElement&&document.activeElement.tagName==='INPUT')return;
+  if(S.view==='result'||S.view==='board'||S.view==='home'){var y=window.scrollY;S.focus=null;render();window.scrollTo(0,y)}
+}
+function initDb(){
+  try{
+    if(!window.claude||!window.claude.use){dbState='off';return}
+    Promise.all([window.claude.use('db'),window.claude.use('user')]).then(function(r){
+      var db=r[0],user=r[1];
+      if(!db||!user){dbState='off';softRefresh();return}
+      return user.id().then(function(id){
+        if(!id){dbState='off';softRefresh();return}
+        UID=id;DB=db;dbState='ready';
+        db.collection('plays').limit(1000).onSnapshot(function(snap){
+          PLAYS=snap.docs.map(function(d){return {id:d.id,data:d.data()}});mergeFromDb();softRefresh();
+        },function(){dbState='off';softRefresh()});
+      });
+    }).catch(function(){dbState='off';softRefresh()});
+  }catch(e){dbState='off'}
+}
+
+/* ---------- views ---------- */
+function cardHtml(c,i,hide){
+  if(hide)return '<div class="card back" aria-label="Dealer\u2019s face-down card" role="img" style="--d:'+(i*.08)+'s"></div>';
+  var red=(c.s==='♥'||c.s==='♦');
+  return '<div class="card'+(red?' red':'')+'" role="img" aria-label="'+NAMES[c.r]+' of '+SUITN[c.s]+'" style="--d:'+(i*.08)+'s"><span class="rk" aria-hidden="true">'+c.r+'</span><span class="su" aria-hidden="true">'+c.s+'</span><span class="big" aria-hidden="true">'+c.s+'</span></div>';
+}
+function tableHtml(d){
+  var h=d.h;
+  return '<div class="table"><div class="seat"><div class="seat-label"><span>Dealer shows '+upName(h.up)+'</span></div><div class="cards">'+cardHtml(d.up,0)+cardHtml(null,1,true)+'</div></div>'
+   +'<div class="seat"><div class="seat-label"><span>Your hand</span><span class="pill">'+desc(h)+'</span></div><div class="cards">'+cardHtml(d.player[0],2)+cardHtml(d.player[1],3)+'</div></div></div>';
+}
+function vGate(){
+  return '<section class="stack"><h1 style="font-size:1.9rem">Before you play</h1><p>Daily Hand uses casino playing cards. It is for adults only.</p>'
+   +'<div class="row"><button class="btn primary" data-act="age-yes">I am 18 or over</button><button class="btn ghost" data-act="age-no">I am under 18</button></div>'
+   +'<p class="small muted">Prototype note: this is a self-declaration. Real age verification is not built yet.</p></section>';
+}
+function vUnder(){return '<section class="stack"><h1 style="font-size:1.9rem">Daily Hand is for adults</h1><p>Come back when you are 18 or over.</p></section>'}
+function vHome(){
+  var day=today(),e=SV.days[day],played=e&&e.s!=null,st=streak();
+  var next=new Date(Date.parse(day+'T00:00:00Z')+864e5).toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'});
+  var partial=e&&!played&&e.a&&e.a.length>0;
+  var cta=played?'<button class="btn primary block" data-act="see-result">See today\u2019s result ('+Math.round(e.s)+'%)</button>'
+    :'<button class="btn primary block" data-act="play">'+(partial?'Continue today\u2019s five':'Play today\u2019s five')+'</button>';
+  return '<section class="hero"><p class="small muted" style="margin:0">No. '+dayNum(day)+' &nbsp;'+esc(niceDate(day))+'</p><h1>Five hands. One right answer each.</h1>'
+   +'<p>Choose Hit, Stand or Double. Every player gets the same five hands, and you are scored on how close you play to basic strategy.</p></section>'
+   +'<div class="table" style="margin-bottom:16px"><div class="seat"><div class="seat-label"><span>Dealer shows 9</span></div><div class="cards">'
+   +cardHtml({v:9,r:'9',s:'♣'},0)+cardHtml(null,1,true)+'</div></div><div class="seat"><div class="seat-label"><span>Your hand</span><span class="pill">Soft 18</span></div><div class="cards">'
+   +cardHtml({v:11,r:'A',s:'♠'},2)+cardHtml({v:7,r:'7',s:'♦'},3)+'</div><p class="ask">Soft 18 against a 9. What would you do?</p></div></div>'
+   +'<div class="stack">'+cta
+   +(played?'<p class="small muted">Next five at '+esc(next)+' your time (midnight UTC).</p>':'')
+   +'<div class="row" style="justify-content:space-between"><button class="link" data-act="practice" style="margin-left:-10px">Try a practice round</button>'
+   +'<span class="small muted">'+(FEATURES.streak?(st>0?'Streak: '+st+' day'+(st===1?'':'s')+' at '+CFG.streakMin+'%+':'No streak yet'):'')+'</span></div>'
+   +'<div class="panel"><p style="margin:0 0 6px"><b>How it works</b></p>'
+   +'<p class="small" style="margin:0 0 6px">After each choice you see how all three options score on average, and how other players chose.</p>'
+   +'<p class="small" style="margin:0 0 6px">Nothing is dealt afterwards, so luck cannot change your score. 100% means you played every hand perfectly.</p>'
+   +'<p class="small muted" style="margin:0"><b>Double</b> means take exactly one more card, then stand. The hand counts twice, for better or worse.</p></div>'
+   +'<p class="small muted">Rules: dealer stands on all 17s. Double on any two cards. No splits.</p></div>';
+}
+function vPlay(){
+  var R=S.round,d=R.deals[R.i],h=d.h,i=R.i;
+  var dots='';for(var k=0;k<5;k++)dots+='<span class="dot'+(k<i||(k===i&&R.phase==='feedback')?' done':(k===i?' now':''))+'"></span>';
+  var head='<div class="dots" aria-hidden="true">'+dots+'<span class="n">Hand '+(i+1)+' of 5</span></div><h1 id="hand-h" tabindex="-1" class="sr">Hand '+(i+1)+' of 5: '+desc(h)+' against dealer '+upName(h.up)+'</h1>'
+    +(R.mode==='practice'?'<p class="small muted" style="margin:0 0 8px">Practice round. Not scored on the board.</p>':'');
+  if(R.phase==='choose'){
+    return head+tableHtml(d)+'<div class="actions" role="group" aria-label="Your move">'
+      +'<button class="act" data-choose="H"><b>Hit</b><span>Take a card</span></button>'
+      +'<button class="act" data-choose="S"><b>Stand</b><span>Keep your total</span></button>'
+      +'<button class="act" data-choose="D"><b>Double</b><span>One card, counts twice</span></button></div>'
+      +'<p class="small muted" style="margin-top:12px">With a button focused, you can also press H, S or D.</p>';
+  }
+  var code=R.codes[i],a=ACT[code],v=verdict(h,a),sc=Math.round(handScore(h,a));
+  var vt={g:['\u2713','Best play'],y:['~','Close'],r:['\u2717','Not best']}[v];
+  var maxAbs=Math.max(Math.abs(h.ev.hit),Math.abs(h.ev.stand),Math.abs(h.ev.double));
+  var bars=['hit','stand','double'].map(function(k){
+    var val=h.ev[k],w=Math.abs(val)/maxAbs*50,left=val>=0?50:50-w;
+    var cls='ev'+(k===h.best?' best':'')+(k===a?' pick':'');
+    var tag=(k===h.best?'best':'')+(k===a?(k===h.best?', your pick':'your pick'):'');
+    return '<div class="'+cls+'"><span class="nm">'+cap(k)+'</span><span class="track"><span class="bar" style="left:'+left+'%;width:'+w+'%"></span></span><span class="val">'+ev2(val)+'</span></div>'
+      +(tag?'<div class="tags" style="margin:-4px 0 0 70px">'+tag+'</div>':'');
+  }).join('');
+  var trap=h.trap&&'<div class="trap"><b>Instinct trap.</b> The beginner\u2019s rule says '+h.instinct+'. The best play here is '+h.best+'.</div>'||'';
+  var fact=R.facts[i];
+  var line=v==='g'?'You played it the way basic strategy does.':'You chose '+a+'. Basic strategy says '+h.best+'. Your choice scores '+sc+'% on this hand.';
+  return head+tableHtml(d)+'<div class="panel" style="margin-top:14px"><div class="verdict"><span class="badge '+v+'" aria-hidden="true">'+vt[0]+' '+vt[1]+'</span><h2 id="fb" tabindex="-1"><span class="sr">'+vt[1]+'. </span>'+(v==='g'?'Nicely played':'Here is the maths')+'</h2></div>'
+    +'<p>'+line+'</p><div class="evs" role="img" aria-label="Average result for each option: '+['hit','stand','double'].map(function(k){return k+' '+ev2(h.ev[k])}).join(', ')+'">'+bars+'</div>'
+    +'<p class="small muted" style="margin-top:8px">Average result per hand over many hands. Doubling counts twice, so its bars run longer.</p>'
+    +'<p>'+esc(whyLine(h))+'</p>'+trap+crowdLine(R,i,code,h)
+    +'<div class="fact"><b>'+FACT_LEAD[fact.type]+'</b> '+esc(fact.text(h))+'</div></div>'
+    +'<button class="btn primary block" style="margin-top:14px" data-act="next">'+(i>=4?'See my result':'Next hand')+'</button>';
+}
+function crowdLine(R,i,code,h){
+  if(R.mode==='practice')return '';
+  var c=getCrowd(R.day,R.deals),p=c.per[i];
+  var ban=SAMPLE?'<span class="sample">Sample data</span><br>':'';
+  if(!p||p.n<CFG.minSample){
+    var why=dbState==='ready'?(p?p.n:0)+' of '+CFG.minSample+' answers so far.':'Player stats need a signed-in viewer with shared data.';
+    return '<p class="crowd muted">'+ban+'Player stats unlock at '+CFG.minSample+' answers. '+why+'</p>';
+  }
+  return '<p class="crowd">'+ban+'<b>'+pct(p[code]/p.n)+'%</b> of today\u2019s players also chose '+ACT[code]+'. <b>'+pct(p[CODE[h.best]]/p.n)+'%</b> got this hand right.</p>';
+}
+function shareText(R){
+  var D=R.done,g=D.rows.map(function(r){return {g:'\uD83D\uDFE9',y:'\uD83D\uDFE8',r:'\uD83D\uDFE5'}[r.v]}).join('');
+  var st=(R.mode==='daily'&&FEATURES.streak)?streak():0;
+  return 'Daily Hand No. '+dayNum(R.day)+': '+Math.round(D.score)+'% of optimal\n'+g+'\n'+STYLES[D.st].n+(st>0?', streak '+st:'');
+}
+function vResult(){
+  var R=S.round;
+  if(!R||!R.done){
+    var e=SV.days[today()];
+    if(e&&e.s!=null){var r=newRound('daily');R=r;R.codes=e.a.slice();R.done={rows:summarise(r.deals,e.a),score:e.s,st:e.st};S.round=R}
+    else return '<p>No result yet.</p><button class="btn primary" data-act="play">Play today\u2019s five</button>';
+  }
+  var D=R.done,daily=R.mode==='daily',c=daily?getCrowd(R.day,R.deals):null;
+  var tiles=D.rows.map(function(r){return '<span class="tile '+r.v+'" role="img" aria-label="Hand '+(r.i+1)+': '+{g:'best play',y:'close',r:'not best'}[r.v]+'">'+{g:'\u2713',y:'~',r:'\u2717'}[r.v]+'</span>'}).join('');
+  var tr='<tr><th scope="col">Hand</th><th scope="col">You</th><th scope="col">Best</th><th scope="col">Score</th></tr>'+D.rows.map(function(r){
+    var p=c&&c.per[r.i],same=(p&&p.n>=CFG.minSample)?'<br><span class="small muted">'+pct(p[r.code]/p.n)+'% chose the same</span>':'';
+    return '<tr><td>'+desc(r.h)+' vs '+upName(r.h.up)+same+'</td><td>'+cap(r.action)+'</td><td>'+cap(r.h.best)+'</td><td>'+Math.round(r.score)+'%</td></tr>';
+  }).join('');
+  var sampleBanner=(SAMPLE&&daily)?'<div class="note"><span class="sample">Sample data</span> Player percentages on this page are invented to show the layout. Nothing here is real or saved. <button class="link" data-act="sample" style="padding:2px 4px">Turn off</button></div>':'';
+  var out='<section class="stack"><h1 class="sr">Your result</h1>'+sampleBanner+'<div><p class="small muted" style="margin:0">'+(daily?'No. '+dayNum(R.day)+' &nbsp;'+esc(niceDate(R.day)):'Practice round')+'</p>'
+   +'<div class="score"><span class="num">'+Math.round(D.score)+'%</span><span class="of">of optimal play</span></div>'
+   +'<div class="style"><b>'+STYLES[D.st].n+'</b><br>'+STYLES[D.st].t+'</div><div class="grid" role="group" aria-label="Hand results">'+tiles+'</div></div>'
+   +'<div class="panel"><table class="hands"><caption class="sr">Hand by hand</caption>'+tr+'</table></div>';
+  // compare
+  var items=[],fin=c?c.scores.length:0;
+  if(daily){
+    var ban=SAMPLE?'<span class="sample">Sample data</span>':'';
+    if(fin>=CFG.minSample){
+      var beat=pct(c.scores.filter(function(x){return x<D.score}).length/fin),near=pct(c.scores.filter(function(x){return Math.abs(x-D.score)<=5}).length/fin);
+      var sh=pct(c.styles[D.st]/Math.max(1,fin));
+      items.push('<li><span class="k">'+beat+'%</span><span>You beat '+beat+'% of today\u2019s players.</span></li>');
+      items.push('<li><span class="k">'+near+'%</span><span>of players scored within 5 points of you.</span></li>');
+      items.push('<li><span class="k">'+sh+'%</span><span>of today\u2019s players share your style, '+STYLES[D.st].n+'.</span></li>');
+    }else{
+      items.push('<li><span class="muted">'+ban+'Player comparisons unlock when '+CFG.minSample+' players have finished today\u2019s five. '+(dbState==='ready'?fin+' so far.':'They need a signed-in viewer with shared data.')+'</span></li>');
+    }
+    var traps=D.rows.filter(function(r){return r.h.trap});
+    if(traps.length)items.push('<li><span class="k">'+traps.filter(function(r){return r.right}).length+'/'+traps.length+'</span><span>instinct-trap hands played right. These are the ones the beginner\u2019s rule gets wrong.</span></li>');
+    var a7=avgWindow(today(),7),p7=avgWindow(prevDay(prevDay(prevDay(prevDay(prevDay(prevDay(prevDay(today()))))))),7);
+    items.push('<li><span class="k">'+Math.round(a7.avg)+'%</span><span>your average over the last 7 days ('+a7.n+' day'+(a7.n===1?'':'s')+' played)'+(p7.n&&a7.n?', '+(a7.avg>=p7.avg?'up ':'down ')+Math.abs(Math.round(a7.avg-p7.avg))+' points on the week before':'')+'.</span></li>');
+    var st=streak();if(FEATURES.streak)items.push('<li><span class="k">'+st+'</span><span>day'+(st===1?'':'s')+' in your streak. A day counts when you score '+CFG.streakMin+'% or more.</span></li>');
+    out+='<div class="panel"><h2 style="font-size:1.25rem;margin-bottom:10px">How you compare</h2><ul class="stats">'+items.join('')+'</ul></div>';
+  }
+  // share
+  var stxt=shareText(R);
+  out+='<div class="panel stack"><h2 style="font-size:1.25rem">Share your grid</h2><textarea class="share" id="sharetext" rows="3" readonly aria-label="Share text">'+esc(stxt)+'</textarea>'
+    +'<div class="row"><button class="btn primary" data-act="copy">Copy to share</button></div></div>';
+  if(daily){
+    // nickname / leaderboard
+    var nickHtml;
+    if(dbState==='ready'){
+      if(validNick(SV.nick))nickHtml='<p style="margin:0 0 8px">You are on the board as <b>'+esc(SV.nick.trim())+'</b>.</p><div class="row"><button class="btn ghost" data-go="board">View the leaderboard</button></div>';
+      else nickHtml='<p style="margin:0">Pick a nickname to join today\u2019s and this week\u2019s leaderboards. Anyone with the link can see it.</p><p class="small muted" style="margin:6px 0 0">We store your nickname and scores to run the board. <span class="ph">[Placeholder: privacy notice link]</span></p><div class="field"><input id="nick" type="text" maxlength="16" autocomplete="off" placeholder="3 to 16 letters or numbers" aria-label="Nickname" value="'+esc(SV.nick)+'"><button class="btn primary" data-act="nick">Join</button></div>'+(S.nickErr?'<p class="err" role="alert">'+esc(S.nickErr)+'</p>':'');
+      out+='<div class="panel"><h2 style="font-size:1.25rem;margin-bottom:8px">Leaderboard</h2>'+nickHtml+(dbNote?'<p class="err small">'+esc(dbNote)+'</p>':'')+'<p class="small muted" style="margin:10px 0 0">No prizes. Rankings are for fun.</p></div>';
+    }else if(dbState==='pending'){
+      out+='<div class="panel"><h2 style="font-size:1.25rem;margin-bottom:8px">Leaderboard</h2><p class="muted" style="margin:0">Connecting to the shared board\u2026</p></div>';
+    }else{
+      out+='<div class="panel"><h2 style="font-size:1.25rem;margin-bottom:8px">Leaderboard</h2><p class="muted" style="margin:0">The leaderboard needs a signed-in viewer. '+(persist?'Your result is saved on this device.':'Storage is blocked in this browser, so your result will be lost when you close this page.')+'</p></div>';
+    }
+    var e2=SV.days[R.day]||{};var ei=e2.ev&&e2.ev.ei;
+    out+='<div class="panel"><h2 style="font-size:1.25rem;margin-bottom:8px">'+(FEATURES.streak?'Keep your streak':'Tomorrow\u2019s five')+'</h2><p style="margin:0 0 10px">In the full version you would enter an email here to '+(FEATURES.streak?'save your streak and ':'')+'hear when tomorrow\u2019s five is ready. Email sign-up is not connected in this prototype, so this button only records interest.</p>'
+      +(ei?'<p class="small muted" style="margin:0">Thanks, interest noted.</p>':'<button class="btn ghost" data-act="email-intent">I\u2019d sign up for this</button>')+'</div>';
+    if(!persist&&dbState==='ready')out+='<p class="small muted">Storage is blocked in this browser, so today\u2019s result is kept on the shared board only.</p>';
+    out+='<p class="small muted">A new five arrives tomorrow.</p>';
+  }else{
+    out+='<div class="row"><button class="btn primary" data-act="practice">Another practice round</button><button class="btn ghost" data-go="home">Back home</button></div>';
+  }
+  return out+'</section>';
+}
+function boardRows(tab){
+  var day=today(),wk=weekStart(day),rows=[];
+  PLAYS.forEach(function(p){
+    var d=p.data;if(!d||!d.days||!validNick(d.nick))return;
+    if(tab==='today'){var e=d.days[day];if(e&&typeof e.s==='number'&&Array.isArray(e.a)&&e.a.length===5)rows.push({id:p.id,nick:d.nick.trim(),v:e.s,sub:''})}
+    else{var tot=0,n=0;Object.keys(d.days).forEach(function(k){if(weekStart(k)===wk&&typeof d.days[k].s==='number'){tot+=d.days[k].s;n++}});if(n)rows.push({id:p.id,nick:d.nick.trim(),v:tot,n:n,avg:tot/n})}
+  });
+  rows.sort(function(a,b){return b.v-a.v||((b.avg||0)-(a.avg||0))||a.nick.localeCompare(b.nick)});
+  return rows;
+}
+function vBoard(){
+  var tab=S.boardTab,rows=boardRows(tab),day=today();
+  var head='<h1 style="font-size:1.9rem;margin:6px 0 4px">Leaderboard</h1><p class="small muted">Same five hands for everyone, so rank is a fair read on skill. No prizes.</p>'
+    +'<div class="tabs" role="tablist"><button class="tab" role="tab" data-tab="today" aria-selected="'+(tab==='today')+'">Today</button><button class="tab" role="tab" data-tab="week" aria-selected="'+(tab==='week')+'">This week</button></div>';
+  if(dbState!=='ready')return head+'<div class="note">'+(dbState==='pending'?'Connecting to the shared board\u2026':'The leaderboard needs a signed-in viewer with shared data. Open the page from your Claude workspace to see it.')+'</div>';
+  var played=SV.days[day]&&SV.days[day].s!=null;
+  var body;
+  if(!rows.length)body='<div class="note">No one is on this board yet. '+(played?'Pick a nickname on your result screen to be first.':'Play today\u2019s five and pick a nickname to be first.')+'</div>';
+  else{
+    var top=rows.slice(0,20),meIdx=rows.map(function(r){return r.id}).indexOf(UID);
+    var list=top.map(function(r,i){return rowHtml(r,i+1,tab)});
+    if(meIdx>=20)list.push('<tr><td colspan="3" class="muted small">\u2026</td></tr>'+rowHtml(rows[meIdx],meIdx+1,tab));
+    body='<table class="board"><caption class="sr">'+(tab==='today'?'Today':'This week')+'</caption><thead><tr><th class="rank" scope="col">#</th><th scope="col">Player</th><th class="r" scope="col">'+(tab==='today'?'Score':'Week total')+'</th></tr></thead><tbody>'+list.join('')+'</tbody></table>'
+      +(tab==='week'?'<p class="small muted" style="margin-top:10px">Week total adds your daily scores from Monday (UTC). It rewards coming back, so a full week tops out at 700.</p>':'');
+  }
+  var mine=!validNick(SV.nick)&&played?'<p class="small" style="margin-top:12px">You are not on the board yet. <button class="link" data-go="result" style="padding:2px 4px">Pick a nickname</button></p>':'';
+  return head+body+mine;
+}
+function rowHtml(r,rank,tab){
+  var me=r.id===UID;
+  var val=tab==='today'?Math.round(r.v)+'%':Math.round(r.v)+'<span class="small muted"> ('+r.n+' day'+(r.n===1?'':'s')+')</span>';
+  return '<tr class="'+(me?'me':'')+'"><td class="rank">'+rank+'</td><td>'+esc(r.nick)+(me?' (you)':'')+'</td><td class="r">'+val+'</td></tr>';
+}
+function vAbout(){
+  var reset=S.confirmReset?'<button class="btn ghost" data-act="reset-yes">Yes, reset my data</button> <button class="link" data-act="reset-no">Cancel</button>':'<button class="btn ghost" data-act="reset">Reset my data (testing)</button>';
+  return '<section class="about"><h1 style="font-size:1.9rem;margin:6px 0 4px">How it\u2019s scored</h1>'
+  +'<p class="muted">This is a prototype spec you can play. Numbers come from an expected-value engine, not from memory.</p>'
+  +'<h2>The rules</h2><ul><li>Large-shoe approximation (infinite deck), dealer stands on all 17s, dealer checks for blackjack.</li><li>Double on any two cards. No splits, no surrender, no doubling after a hit.</li><li>Pairs are left out for now, since they need a Split button. The pool is '+H.length+' decisive hands; near-ties such as hard 16 against a 10 are excluded.</li></ul>'
+  +'<h2>Your score</h2><ul><li>Each option has an expected value: the average result per hand over many hands.</li><li>Per hand: 100 \u00D7 (1 \u2212 value you gave away \u00F7 gap between the best and worst option). Best play scores 100, the worst option scores 0, and a close second scores close to 100. On the few hands where all three options are nearly equal, a minimum gap of 0.15 stops a tiny slip from looking like a disaster.</li><li>Any option within 0.01 of the best counts as right.</li><li>The percentage is a score out of 100 built hand by hand. It is not a share of expected value.</li><li>The five hands are weighted 1, 1, 1.5, 1.5 and 2, so the harder hands matter more. Your headline number is the weighted average.</li><li>A grid tile is a tick for best play, a tilde at 50% or more, and a cross below that.</li></ul>'
+  +'<h2>Player stats</h2><ul><li>Percentages appear only after '+CFG.minSample+' players have answered, so two people never become \u201C100% of players\u201D.</li><li>They describe today\u2019s players who finished and chose to play, not people in general.</li><li>Player stats appear after you answer, so they cannot influence your choice.</li></ul>'
+  +'<h2>Known limits of this prototype</h2><ul><li>One play per day is kept on this device and your signed-in account. A determined player could bypass it. A real build needs a server-side limit.</li><li>Scores are written by the player\u2019s own browser, so the leaderboard trusts clients.</li><li>Basic strategy charts are public, so someone can look up the answers. That is why the weekly board is the main one.</li><li>The nickname filter is a basic word list. A public launch needs real moderation.</li><li>Facts marked for review in the fact bank have not been source-checked.</li></ul>'
+  +(DEBUG?'<h2>Tools</h2><div class="stack"><div><button class="btn ghost" data-act="sample">'+(SAMPLE?'Turn off sample data preview':'Preview player stats with sample data')+'</button><p class="small muted" style="margin-top:6px">Shows how the percentages look once enough players exist. Everything shown this way is labelled \u201CSample data\u201D and is never saved.</p></div><div>'+reset+'</div></div>':'')+'</section>';
+}
+function render(){
+  var v=S.view;
+  if(underFlag()){app.innerHTML=vUnder()}
+  else if(!SV.age&&v!=='under'){app.innerHTML=vGate()}
+  else{
+    app.innerHTML={home:vHome,play:vPlay,result:vResult,board:vBoard,about:vAbout,under:vUnder}[v]();
+  }
+  document.getElementById('nav-board').setAttribute('aria-current',v==='board'?'page':'false');
+  document.getElementById('nav-about').setAttribute('aria-current',v==='about'?'page':'false');
+  var f=S.focus;S.focus=null;
+  if(f==='fb'){var el=document.getElementById('fb');if(el){el.focus({preventScroll:false})}}
+  else if(f==='hand'){var h=document.getElementById('hand-h');if(h)h.focus({preventScroll:true})}
+  else if(f==='main'){app.focus({preventScroll:true})}
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-go],[data-act],[data-choose],[data-tab]');if(!t)return;
+  if(t.dataset.go){go(t.dataset.go);return}
+  if(t.dataset.choose){choose(t.dataset.choose);return}
+  if(t.dataset.tab){S.boardTab=t.dataset.tab;S.focus=null;render();return}
+  var a=t.dataset.act;
+  if(a==='age-yes'){SV.age=true;saveLocal();render()}
+  else if(a==='age-no'){try{sessionStorage.setItem('dailyhand.under','1')}catch(x){}S.view='under';render()}
+  else if(a==='play')startDaily();
+  else if(a==='see-result')go('result');
+  else if(a==='practice')startPractice();
+  else if(a==='next')next();
+  else if(a==='copy'){
+    var ta=document.getElementById('sharetext'),txt=ta.value,done=function(){say('Copied. Paste it anywhere to share.');var e2=SV.days[S.round.day];if(S.round.mode==='daily'&&e2){e2.ev=e2.ev||{};e2.ev.sh=(e2.ev.sh||0)+1;saveLocal();queueSync()}};
+    try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,function(){ta.select();say('Select the text and copy it.')});return}}catch(x){}
+    ta.focus();ta.select();say('Select the text and copy it.');
+  }
+  else if(a==='nick'){
+    var v=(document.getElementById('nick').value||'').trim();
+    if(!validNick(v)){S.nickErr='Use 3 to 16 letters, numbers, spaces, hyphens or underscores, and keep it friendly.';render();return}
+    SV.nick=v;saveLocal();S.nickErr='';queueSync();render();say('You are on the leaderboard.');
+  }
+  else if(a==='email-intent'){var e3=SV.days[today()];if(e3){e3.ev=e3.ev||{};e3.ev.ei=(e3.ev.ei||0)+1;saveLocal();queueSync();render()}}
+  else if(a==='sample'){SAMPLE=!SAMPLE;render()}
+  else if(a==='reset'){S.confirmReset=true;render()}
+  else if(a==='reset-no'){S.confirmReset=false;render()}
+  else if(a==='reset-yes'){
+    SV={age:SV.age,nick:'',days:{}};saveLocal();S.round=null;S.confirmReset=false;
+    if(DB&&UID)DB.doc('plays/'+UID).delete().catch(function(){});
+    go('home');say('Your data was reset.');
+  }
+});
+document.addEventListener('keydown',function(e){
+  if(e.metaKey||e.ctrlKey||e.altKey)return;
+  var tg=e.target&&e.target.tagName;if(tg==='INPUT'||tg==='TEXTAREA')return;
+  if(S.view==='play'&&S.round&&S.round.phase==='choose'){
+    var k=e.key.toLowerCase();if(e.repeat||!(e.target&&e.target.closest&&e.target.closest('.actions')))return;
+    if(k==='h'||k==='s'||k==='d'){e.preventDefault();choose(k.toUpperCase())}
+  }
+});
+document.addEventListener('keypress',function(e){if(e.key==='Enter'&&e.target&&e.target.id==='nick'){e.preventDefault();var b=document.querySelector('[data-act="nick"]');if(b)b.click()}});
+
+render();
+initDb();
+})();
+</script>
+</body>
+</html>

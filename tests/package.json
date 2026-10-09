@@ -1,0 +1,8 @@
+{
+  "name": "daily-hand-tests",
+  "private": true,
+  "scripts": {
+    "test": "python3 ../scripts/build.py && node logic.test.js && node personas.test.js && python3 ../engine/chart_check.py && python3 ../scripts/contrast_check.py > /dev/null && echo ALL CHECKS PASSED"
+  },
+  "devDependencies": { "jsdom": "^26.0.0" }
+}
