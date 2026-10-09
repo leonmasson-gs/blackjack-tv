@@ -23,8 +23,26 @@ for (const W of widths) {
   const errs = []; page.on('pageerror', e => errs.push(String(e))); page.on('console', m => m.type() === 'error' && errs.push(m.text()));
   await page.goto(base + '/index.html?debug', { waitUntil: 'networkidle0' });
   const click = async s => { await page.waitForSelector(s); await page.evaluate(s => document.querySelector(s).click(), s); };
+  const contrast = () => page.evaluate(() => {
+    const parse = c => { const m = c.match(/[\d.]+/g); if (!m) return null; if (c.startsWith('color(')) return [m[0] * 255, m[1] * 255, m[2] * 255, m[3] === undefined ? 1 : +m[3]]; return [+m[0], +m[1], +m[2], m[3] === undefined ? 1 : +m[3]]; };
+    const lum = ([r, g, b]) => { const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+    const bgOf = el => { const layers = []; for (let e = el; e; e = e.parentElement) { const c = parse(getComputedStyle(e).backgroundColor); if (c && c[3] > 0) { layers.push(c); if (c[3] > 0.99) break; } } let base = [255, 255, 255]; const bodyBg = parse(getComputedStyle(document.body).backgroundColor); if (bodyBg && bodyBg[3] > 0.99) base = bodyBg; for (const c of layers.reverse()) base = base.map((v, i) => c[i] * c[3] + v * (1 - c[3])); return base; };
+    const bad = [];
+    document.querySelectorAll('#app *, footer *, header *').forEach(el => {
+      if (![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return;
+      const r = el.getBoundingClientRect(); if (!r.width || !r.height || getComputedStyle(el).visibility === 'hidden') return;
+      if (el.disabled && !el.matches('.opt')) return;
+      const fg = parse(getComputedStyle(el).color); if (!fg) return; const bg = bgOf(el);
+      const a = fg[3], mixed = fg.slice(0, 3).map((v, i) => v * a + bg[i] * (1 - a));
+      const l1 = lum(mixed), l2 = lum(bg), ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+      const px = parseFloat(getComputedStyle(el).fontSize), bold = +getComputedStyle(el).fontWeight >= 700, large = px >= 24 || (px >= 18.66 && bold);
+      if (ratio < (large ? 3 : 4.5)) bad.push(el.tagName.toLowerCase() + '.' + el.className + ' "' + el.textContent.trim().slice(0, 24) + '" ' + ratio.toFixed(2));
+    });
+    return bad.slice(0, 4);
+  });
   const check = async name => {
     await wait(350);
+    const low = await contrast(); if (low.length) { problems++; console.log(`FAIL ${String(W).padStart(4)}px ${name} low text contrast: ${low.join(' | ')}`); }
     const r = await page.evaluate(W => ({ sw: document.documentElement.scrollWidth, bad: [...document.querySelectorAll('body *')].filter(e => { const b = e.getBoundingClientRect(); return b.width && b.right > W + 0.5; }).slice(0, 3).map(e => e.tagName.toLowerCase() + '.' + e.className) }), W);
     const bad = r.sw > W || r.bad.length; if (bad) problems++;
     console.log(`${bad ? 'FAIL' : 'ok  '} ${String(W).padStart(4)}px ${name}${bad ? ' overflow ' + r.sw + ' ' + r.bad : ''}`);

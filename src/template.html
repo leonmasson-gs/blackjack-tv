@@ -236,6 +236,33 @@ table.mini-t td.r{text-align:right;white-space:nowrap;padding-left:10px;font-var
   .fact-card{padding:16px 18px;font-size:1.05rem}
   .numbers{grid-template-columns:repeat(3,minmax(0,1fr));gap:36px}
 }
+
+/* ---- story, timeline, bonus question ---- */
+.table .actions{margin-top:16px}
+.table .act{color:var(--ink)}
+.table .act span{color:var(--muted)}
+.table .ask{margin:18px 0 0}
+.story{display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.story .yr{flex:none;font-family:var(--font-display);font-size:.9rem;background:var(--ink);color:var(--page);border-radius:8px;padding:3px 10px;white-space:nowrap;margin-top:1px}
+.timeline{list-style:none;margin:10px 0 0;padding:0 0 0 14px;border-left:3px solid var(--accent)}
+.timeline li{position:relative;padding:0 0 16px 18px}
+.timeline li:last-child{padding-bottom:2px}
+.timeline li::before{content:"";position:absolute;left:-24px;top:6px;width:11px;height:11px;border-radius:50%;background:var(--accent)}
+.timeline .yr{display:block;font-family:var(--font-display);font-size:1.05rem;margin-bottom:2px}
+.bonus h3,.panel>h3{font-size:1.2rem;margin-bottom:8px}
+.opts{display:grid;gap:10px;margin:14px 0}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;min-height:48px;padding:10px 14px;border:2px solid var(--line-strong);border-radius:12px;background:var(--surface);font-weight:500}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt:disabled{cursor:default;opacity:1}
+.opt.right{border-color:var(--good);background:var(--good-bg);color:var(--good);font-weight:700}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg);color:var(--bad);font-weight:700}
+.opt .mk{font-weight:800}
+.bonus .why{margin:0 0 8px}
+.learn-top{display:grid;gap:14px;margin-bottom:14px}
+@media (min-width:960px){
+  .learn-top{grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+  .story{padding:14px 16px}
+}
 </style>
 </head>
 <body>
@@ -369,24 +396,36 @@ var FACTS=[
  {id:'s18',type:'myth',src:'engine',sp:true,g:true,when:function(h){return h.soft&&h.total===18&&(h.up===9||h.up===10)},text:function(){return 'Soft 18 sounds strong, so many players stand against a 9 or 10. Hitting is the better play, because the Ace means no card can bust you.'}},
  {id:'h12',type:'myth',src:'engine',sp:true,g:true,when:function(h){return !h.soft&&h.total===12&&h.up<=3},text:function(){return 'Hitting a 12 against a dealer 2 or 3 feels reckless. It is the better play, but only by a small margin.'}},
  {id:'h16',type:'myth',src:'engine',sp:true,g:true,when:function(h){return !h.soft&&h.total>=15&&h.up>=7},text:function(){return 'Standing on 16 against a dealer 10 feels safe, but it is close to a coin flip. In this model hitting and standing are within 0.01 of each other, and both lose far more than they win.'}},
+ {id:'upFinish',type:'why',src:'engine',sp:true,when:function(){return true},text:function(h){var d=POOL.stats.up_final[upName(h.up)],top='bust';['17','18','19','20','21'].forEach(function(k){if(d[k]>d[top])top=k});return 'A dealer showing '+upName(h.up)+' most often '+(top==='bust'?'busts':'finishes on '+top)+', about '+pct(d[top])+'% of the time.'+(top==='bust'?'':' They bust about '+pct(d.bust)+'% of the time.')}},
+ {id:'perm52',type:'trivia',src:'engine',g:true,when:function(){return true},text:function(){return 'A shuffled deck can land in about 8 \u00D7 10\u2076\u2077 different orders (52 factorial). A well-shuffled deck is almost certainly in an order that has never existed before.'}},
+ {id:'suits',type:'trivia',src:'review',g:true,when:function(){return true},text:function(){return 'Blackjack ignores suits completely. Only the rank of each card matters, which is why every hand here boils down to a total and whether an Ace counts as 11.'}},
+ {id:'faces',type:'trivia',src:'review',g:true,when:function(){return true},text:function(){return 'Jacks, queens and kings are called face cards or picture cards. In blackjack each is worth exactly the same as a 10.'}},
+ {id:'natural21',type:'trivia',src:'review',g:true,when:function(){return true},text:function(){return 'A natural blackjack outranks any other 21. A two-card 21 beats a 21 made with three or more cards.'}},
+ {id:'endless',type:'why',src:'review',g:true,when:function(){return true},text:function(){return 'This game treats the deck as endless, which is close to how a big multi-deck shoe behaves. With fewer decks, a few borderline plays shift slightly.'}},
+ {id:'name',type:'history',y:1900,yr:'Early 1900s',src:'verify',g:true,when:function(){return true},text:function(){return 'The game was once simply called twenty-one. One popular story links the name \u201Cblackjack\u201D to a bonus for an Ace of spades with a black Jack, though sources differ.'}},
+ {id:'h1370',type:'history',y:1375,yr:'Late 1300s',src:'verify',g:true,when:function(){return true},text:function(){return 'Playing cards reached Europe in the late 1300s, probably from the Islamic world. Within a few years some cities were already banning them.'}},
+ {id:'h1480',type:'history',y:1480,yr:'1400s',src:'verify',g:true,when:function(){return true},text:function(){return 'The hearts, diamonds, clubs and spades we use today are French suits. They spread across Europe from the 1400s and became the standard 52-card pack.'}},
+ {id:'trump',type:'history',y:1500,yr:'1500s',src:'verify',g:true,when:function(){return true},text:function(){return 'The word \u201Ctrump\u201D comes from \u201Ctriumph\u201D, the name of an old European card game in which one suit beat all the others.'}},
+ {id:'cervantes',type:'history',y:1601,yr:'Early 1600s',src:'verify',g:true,when:function(){return true},text:function(){return 'A card game called \u201Cveintiuna\u201D (twenty-one) appears in a story by Cervantes, one of the earliest written mentions of a game like blackjack.'}},
+ {id:'cribbage',type:'history',y:1630,yr:'1600s',src:'verify',g:true,when:function(){return true},text:function(){return 'Cribbage is usually credited to the English poet Sir John Suckling in the early 1600s, and it is still played today.'}},
+ {id:'vingt',type:'history',y:1750,yr:'1700s',src:'verify',g:true,when:function(){return true},text:function(){return 'By the 1700s a French game called vingt-et-un (\u201Ctwenty-one\u201D) was popular. It crossed the Atlantic to America in the following century.'}},
+ {id:'joker',type:'history',y:1860,yr:'1860s',src:'verify',g:true,when:function(){return true},text:function(){return 'The joker was added to the pack in the United States around 1860, for a game called Euchre.'}},
+ {id:'1956',type:'history',y:1956,yr:'1956',src:'verify',g:true,when:function(){return true},text:function(){return 'Four US Army engineers, later nicknamed the \u201CFour Horsemen of Aberdeen\u201D, published the first mathematically derived blackjack strategy, working it out on desk calculators.'}},
  {id:'bj',type:'trivia',src:'engine',g:true,when:function(){return true},text:function(){return 'About 1 starting hand in 21 (4.7%) is a natural blackjack, an Ace plus a ten-value card.'}},
  {id:'twoCard',type:'trivia',src:'engine',g:true,when:function(){return true},text:function(){return 'A single deck allows 1,326 different two-card starting hands. 64 of them are a natural blackjack, a little under 5%.'}},
  {id:'ten',type:'trivia',src:'engine',g:true,when:function(){return true},text:function(){return 'Four ranks (10, J, Q and K) all count as 10, so about 4 cards in every 13 are worth 10. It is the most common card value by a wide margin.'}},
  {id:'ace',type:'trivia',src:'engine',g:true,when:function(){return true},text:function(){return 'The Ace is the only card whose value can change during a hand. It counts as 11 until that would bust you, then drops to 1.'}},
  {id:'hole',type:'trivia',src:'verify',g:true,when:function(){return true},text:function(){return 'The dealer\u2019s face-down card is called the hole card. In US-style games the dealer checks it for blackjack straight away when showing an Ace or a ten-value card.'}},
- {id:'name',type:'trivia',src:'verify',g:true,when:function(){return true},text:function(){return 'The game was once simply called twenty-one. One popular story links the name \u201Cblackjack\u201D to a bonus for an Ace of spades with a black Jack, though sources differ.'}},
- {id:'cervantes',type:'trivia',src:'verify',g:true,when:function(){return true},text:function(){return 'A card game called \u201Cveintiuna\u201D (twenty-one) appears in a story by Cervantes from the early 1600s, one of the earliest written mentions of a game like blackjack.'}},
  {id:'pontoon',type:'trivia',src:'verify',g:true,when:function(){return true},text:function(){return 'A close cousin of blackjack called pontoon is played in the UK, Ireland and Australia. Players say \u201Ctwist\u201D and \u201Cstick\u201D instead of hit and stand.'}},
- {id:'1956',type:'trivia',src:'verify',g:true,when:function(){return true},text:function(){return 'In 1956 four US Army engineers published the first mathematically derived blackjack strategy, working it out on desk calculators.'}},
  {id:'edge',type:'honest',src:'verify',g:true,when:function(){return true},text:function(){return 'Basic strategy lowers the house edge. It does not remove it, and perfect play still loses plenty of hands.'}},
  {id:'quiz',type:'honest',src:'review',g:true,when:function(){return true},text:function(){return 'This game scores decisions, not outcomes. No cards are dealt after you choose, so luck cannot change your score.'}},
  {id:'indep',type:'honest',src:'review',g:true,when:function(){return true},text:function(){return 'Past results never make the next hand \u201Cdue\u201D. Each hand is judged on its own.'}}
 ];
-var FACT_LEAD={why:'Why it works.',myth:'Myth.',trivia:'Did you know?',honest:'Worth remembering.'};
+var FACT_LEAD={why:'Why it works.',myth:'Myth.',trivia:'Did you know?',honest:'Worth remembering.',history:'From the history books.'};
 function shuffled(arr,rnd){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(rnd()*(i+1));var x=a[i];a[i]=a[j];a[j]=x}return a}   /* Fisher-Yates: same order in every browser */
 function pickFacts(deals,day){
   var rnd=rngFor('facts|'+day),order=['trivia','myth','why','honest','why'],used={},out=[],sp=0;
-  var bank=shuffled(FACTS,rnd);
+  var bank=shuffled(FACTS.filter(function(f){return f.type!=='history'}),rnd);
   deals.forEach(function(d,i){
     var h=d.h,f=null;
     var spec=bank.filter(function(x){return !used[x.id]&&x.sp&&x.when(h)});
@@ -399,7 +438,43 @@ function pickFacts(deals,day){
 }
 function extraFacts(seed,skip,n){   /* general facts not already shown this round */
   var used={};(skip||[]).forEach(function(f){used[f.id]=1});
-  return shuffled(FACTS.filter(function(f){return f.g&&!used[f.id]}),rngFor('extra|'+seed)).slice(0,n);
+  return shuffled(FACTS.filter(function(f){return f.g&&f.type!=='history'&&!used[f.id]}),rngFor('extra|'+seed)).slice(0,n);
+}
+function pickStories(seed){   /* five history items, oldest first: one per hand, then recapped as a timeline */
+  var h=FACTS.filter(function(f){return f.type==='history'});
+  return shuffled(h,rngFor('story|'+seed)).slice(0,5).sort(function(a,b){return a.y-b.y});
+}
+function storyHtml(f){return '<div class="story"><span class="yr">'+esc(f.yr)+'</span><div><b>'+FACT_LEAD.history+'</b> '+esc(f.text())+'</div></div>'}
+function timelineHtml(stories){
+  return '<div class="panel"><h3>Today\u2019s story, in order</h3><ol class="timeline">'+stories.map(function(f){return '<li><span class="yr">'+esc(f.yr)+'</span>'+esc(f.text())+'</li>'}).join('')+'</ol></div>';
+}
+var TQ=[
+ {id:'tens',src:'engine',q:'How many cards in a 52-card deck count as 10 in blackjack?',o:['16','12','20'],a:0,why:'10, J, Q and K all count as 10, and there are four of each: 16 cards.'},
+ {id:'bust6',src:'engine',q:'How often does a dealer showing a 6 bust?',o:['About 22%','About 62%','About 42%'],a:2,why:'About 42%, the highest of any upcard. That is why a dealer 6 is the weakest card to face.'},
+ {id:'bj',src:'engine',q:'About how many starting hands are a natural blackjack?',o:['1 in 5','1 in 21','1 in 100'],a:1,why:'An Ace plus a ten-value card makes about 4.7% of starting hands, roughly 1 in 21.'},
+ {id:'hit16',src:'engine',q:'If you hit a hard 16, how many cards out of every 13 bust you?',o:['8','4','11'],a:0,why:'A 6, 7, 8 or 9 busts you, and so do the four ten-value cards: 8 out of 13. The Ace never busts a 16.'},
+ {id:'finish',src:'engine',q:'When the dealer does not bust, which total do they finish on most often?',o:['17','21','20'],a:2,why:'20, at about 18% of hands, ahead of 17 at about 14.5%. The dealer busts about 28% of the time.'},
+ {id:'stand20',src:'engine',q:'You stand on a hard 20. About how often do you win against a random dealer hand?',o:['About 50%','About 70%','About 90%'],a:1,why:'About 70%. You tie about 18% and lose about 12%.'},
+ {id:'perm',src:'engine',q:'Roughly how many different orders can a shuffled 52-card deck be in?',o:['About a million','About 52 \u00D7 52','About 8 followed by 67 zeros'],a:2,why:'52 factorial is about 8 \u00D7 10\u2076\u2077, so a well-shuffled deck is almost certainly in an order never seen before.'},
+ {id:'ace',src:'review',q:'What can an Ace count as in blackjack?',o:['Always 1','1 or 11, whichever suits the hand','Always 11'],a:1,why:'It counts as 11 until that would bust you, then drops to 1.'},
+ {id:'natural',src:'review',q:'What beats a 21 made with three cards?',o:['A hard 20','Nothing: it is a tie','A natural blackjack'],a:2,why:'A two-card 21 outranks any other 21.'},
+ {id:'cerv',src:'verify',q:'Which game, a possible ancestor of blackjack, does Cervantes mention in an early-1600s story?',o:['Veintiuna','Cribbage','Whist'],a:0,why:'Veintiuna means \u201Ctwenty-one\u201D.'},
+ {id:'joker',src:'verify',q:'Which game was the joker first added to the pack for?',o:['Poker','Bridge','Euchre'],a:2,why:'Euchre, in the United States around 1860.'},
+ {id:'trumpq',src:'verify',q:'The card-game word \u201Ctrump\u201D comes from which word?',o:['Trumpet','Triumph','Trust'],a:1,why:'Triumph was an old European card game in which one suit beat the others.'},
+ {id:'y1956',src:'verify',q:'When was the first mathematically derived blackjack strategy published?',o:['1936','1976','1956'],a:2,why:'1956, by four US Army engineers using desk calculators.'},
+ {id:'twist',src:'verify',q:'In pontoon, a cousin of blackjack played in the UK and Ireland, what do players say instead of \u201Chit\u201D?',o:['Draw','Twist','Raise'],a:1,why:'\u201CTwist\u201D to take a card and \u201Cstick\u201D to stay.'}
+];
+function bonusFor(seed){return TQ[Math.floor(rngFor('bq|'+seed)()*TQ.length)]}
+function bonusHtml(R){
+  var seed=R.mode==='daily'?R.day:'p'+R.stories[0].id+R.i,q=bonusFor(seed);
+  var chosen=R.mode==='daily'?(SV.days[R.day]&&SV.days[R.day].bq):R.bq; if(chosen===undefined)chosen=null;
+  var opts=q.o.map(function(o,i){
+    var cls='opt',mark='';
+    if(chosen!==null){if(i===q.a){cls+=' right';mark='<span class="mk" aria-hidden="true">\u2713</span>'}else if(i===chosen){cls+=' wrong';mark='<span class="mk" aria-hidden="true">\u2717</span>'}}
+    return '<button class="'+cls+'" data-bq="'+i+'"'+(chosen!==null?' disabled':'')+'><span>'+esc(o)+'</span>'+mark+'</button>';
+  }).join('');
+  var res=chosen===null?'':'<p class="why" id="bq-why" tabindex="-1"><b>'+(chosen===q.a?'Correct.':'Not quite.')+'</b> '+esc(q.why)+'</p>';
+  return '<div class="panel bonus"><h3>Bonus question</h3><p style="margin:0">'+esc(q.q)+'</p><div class="opts" role="group" aria-label="Answers">'+opts+'</div>'+res+(chosen===null?'<p class="small muted" style="margin:0">Not scored. Just for fun.</p>':'')+'</div>';
 }
 function factHtml(f,cls){return '<div class="'+(cls||'fact')+'"><b>'+FACT_LEAD[f.type]+'</b> '+esc(f.text())+'</div>'}
 function barRow(label,frac,right){return '<tr><th scope="row">'+label+'</th><td class="bc"><span class="mini" aria-hidden="true"><span style="width:'+Math.max(2,Math.round(frac*100))+'%"></span></span></td><td class="r">'+right+'</td></tr>'}
@@ -416,7 +491,7 @@ function numbersHtml(){
 }
 function learnHtml(R){
   var ex=extraFacts(R.mode==='daily'?R.day:'practice'+R.i,R.facts,2);
-  return '<section class="learn" aria-labelledby="learn-h"><h2 id="learn-h">Keep learning</h2><div class="learn-grid">'+ex.map(function(f){return factHtml(f,'fact-card')}).join('')+'</div>'+numbersHtml()+'</section>';
+  return '<section class="learn" aria-labelledby="learn-h"><h2 id="learn-h">Keep learning</h2><div class="learn-top">'+bonusHtml(R)+timelineHtml(R.stories)+'</div><div class="learn-grid">'+ex.map(function(f){return factHtml(f,'fact-card')}).join('')+'</div>'+numbersHtml()+'</section>';
 }
 function dayFact(day){return extraFacts('home|'+day,[],1)[0]}
 function whyLine(h){
@@ -472,7 +547,7 @@ function newRound(mode){
   if(mode==='daily'){var e=SV.days[day];if(e&&Array.isArray(e.a))codes=e.a.slice(0,5)}
   var i=Math.min(codes.length,4),phase='choose',se=SV.days[day];
   if(mode==='daily'&&se&&se.fb&&se.s==null&&codes.length>=1){i=codes.length-1;phase='feedback'}
-  return {mode:mode,day:day,deals:deals,facts:pickFacts(deals,mode==='daily'?day:seed),codes:codes,i:i,phase:phase};
+  return {mode:mode,day:day,deals:deals,facts:pickFacts(deals,mode==='daily'?day:seed),stories:pickStories(mode==='daily'?day:seed),codes:codes,i:i,phase:phase};
 }
 function startDaily(){
   var e=SV.days[today()];
@@ -481,6 +556,14 @@ function startDaily(){
   if(r.codes.length>=5&&r.phase!=='feedback'){finish(r);return}
   if(!SV.days[r.day]){SV.days[r.day]={a:[],ev:{st:Date.now()}};saveLocal()}
   S.round=r;go('play');
+}
+function startFrom(code){
+  var e=SV.days[today()];
+  if(e&&e.s!=null){go('result');return}
+  var r=newRound('daily');
+  if(r.codes.length){startDaily();return}
+  SV.days[r.day]=SV.days[r.day]||{a:[],ev:{st:Date.now()}};saveLocal();
+  S.round=r;go('play');choose(code);
 }
 function startPractice(){S.round=newRound('practice');go('play')}
 function choose(code){
@@ -554,10 +637,10 @@ function cardHtml(c,i,hide){
   var red=(c.s==='♥'||c.s==='♦');
   return '<div class="card'+(red?' red':'')+'" role="img" aria-label="'+NAMES[c.r]+' of '+SUITN[c.s]+'" style="--d:'+(i*.08)+'s"><span class="rk" aria-hidden="true">'+c.r+'</span><span class="su" aria-hidden="true">'+c.s+'</span><span class="big" aria-hidden="true">'+c.s+'</span></div>';
 }
-function tableHtml(d){
+function tableHtml(d,extra,cls){
   var h=d.h;
-  return '<div class="table"><div class="seat"><div class="seat-label"><span>Dealer shows '+upName(h.up)+'</span></div><div class="cards">'+cardHtml(d.up,0)+cardHtml(null,1,true)+'</div></div>'
-   +'<div class="seat"><div class="seat-label"><span>Your hand</span><span class="pill">'+desc(h)+'</span></div><div class="cards">'+cardHtml(d.player[0],2)+cardHtml(d.player[1],3)+'</div></div></div>';
+  return '<div class="table'+(cls?' '+cls:'')+'"><div class="seat"><div class="seat-label"><span>Dealer shows '+upName(h.up)+'</span></div><div class="cards">'+cardHtml(d.up,0)+cardHtml(null,1,true)+'</div></div>'
+   +'<div class="seat"><div class="seat-label"><span>Your hand</span><span class="pill">'+desc(h)+'</span></div><div class="cards">'+cardHtml(d.player[0],2)+cardHtml(d.player[1],3)+'</div></div>'+(extra||'')+'</div>';
 }
 function vGate(){
   return '<section class="stack"><h1 style="font-size:1.9rem">Before you play</h1><p>Daily Hand uses casino playing cards. It is for adults only.</p>'
@@ -571,12 +654,14 @@ function vHome(){
   var partial=e&&!played&&e.a&&e.a.length>0;
   var cta=played?'<button class="btn primary block" data-act="see-result">See today\u2019s result ('+Math.round(e.s)+'%)</button>'
     :'<button class="btn primary block" data-act="play">'+(partial?'Continue today\u2019s five':'Play today\u2019s five')+'</button>';
-  var df=dayFact(day);
+  var df=dayFact(day),fresh=!played&&!partial,d0=fresh?buildDay(day)[0]:null;
+  var teaser=fresh?tableHtml(d0,'<p class="ask">Today\u2019s first hand. What would you do?</p><div class="actions" role="group" aria-label="Answer today\u2019s first hand">'
+    +'<button class="act" data-start="H"><b>Hit</b><span>Take a card</span></button><button class="act" data-start="S"><b>Stand</b><span>Keep your total</span></button><button class="act" data-start="D"><b>Double</b><span>One card, counts twice</span></button></div>','hero-table'):null;
   return '<div class="home"><section class="hero"><p class="small muted" style="margin:0">No. '+dayNum(day)+' &nbsp;'+esc(niceDate(day))+'</p><h1>Five hands. One right answer each.</h1>'
    +'<p>Choose Hit, Stand or Double. Every player gets the same five hands, and you are scored on how close you play to basic strategy.</p></section>'
-   +'<div class="table hero-table"><div class="seat"><div class="seat-label"><span>Dealer shows 9</span></div><div class="cards">'
+   +(teaser||'<div class="table hero-table"><div class="seat"><div class="seat-label"><span>Dealer shows 9</span></div><div class="cards">'
    +cardHtml({v:9,r:'9',s:'♣'},0)+cardHtml(null,1,true)+'</div></div><div class="seat"><div class="seat-label"><span>Your hand</span><span class="pill">Soft 18</span></div><div class="cards">'
-   +cardHtml({v:11,r:'A',s:'♠'},2)+cardHtml({v:7,r:'7',s:'♦'},3)+'</div><p class="ask">Soft 18 against a 9. What would you do?</p></div></div>'
+   +cardHtml({v:11,r:'A',s:'♠'},2)+cardHtml({v:7,r:'7',s:'♦'},3)+'</div><p class="ask">Soft 18 against a 9. What would you do?</p></div></div>')
    +'<div class="stack cta">'+cta
    +(played?'<p class="small muted">Next five at '+esc(next)+' your time (midnight UTC).</p>':'')
    +'<div class="row" style="justify-content:space-between"><button class="link" data-act="practice" style="margin-left:-10px">Try a practice round</button>'
@@ -617,7 +702,7 @@ function vPlay(){
     +'<p>'+line+'</p><div class="evs" role="img" aria-label="Average result for each option: '+['hit','stand','double'].map(function(k){return k+' '+ev2(h.ev[k])}).join(', ')+'">'+bars+'</div>'
     +'<p class="small muted" style="margin-top:8px">Average result per hand over many hands. Doubling counts twice, so its bars run longer.</p>'
     +'<p>'+esc(whyLine(h))+'</p>'+trap+crowdLine(R,i,code,h)
-    +'<div class="fact"><b>'+FACT_LEAD[fact.type]+'</b> '+esc(fact.text(h))+'</div></div>'
+    +'<div class="fact"><b>'+FACT_LEAD[fact.type]+'</b> '+esc(fact.text(h))+'</div>'+storyHtml(R.stories[i])+'</div>'
     +'<button class="btn primary block" style="margin-top:14px" data-act="next">'+(i>=4?'See my result':'Next hand')+'</button></div></div>';
 }
 function crowdLine(R,i,code,h){
@@ -759,9 +844,17 @@ function render(){
 
 /* ---------- events ---------- */
 document.addEventListener('click',function(e){
-  var t=e.target.closest('[data-go],[data-act],[data-choose],[data-tab]');if(!t)return;
+  var t=e.target.closest('[data-go],[data-act],[data-choose],[data-tab],[data-start],[data-bq]');if(!t)return;
   if(t.dataset.go){go(t.dataset.go);return}
   if(t.dataset.choose){choose(t.dataset.choose);return}
+  if(t.dataset.start){startFrom(t.dataset.start);return}
+  if(t.dataset.bq!==undefined){
+    var R=S.round;if(!R)return;var qi=+t.dataset.bq;
+    if(R.mode==='daily'){var de=SV.days[R.day];if(de&&de.bq==null){de.bq=qi;saveLocal()}}else if(R.bq==null)R.bq=qi;
+    var y=window.scrollY;S.focus=null;render();window.scrollTo(0,y);
+    var w=document.getElementById('bq-why');if(w)w.focus({preventScroll:true});
+    return;
+  }
   if(t.dataset.tab){S.boardTab=t.dataset.tab;S.focus=null;render();return}
   var a=t.dataset.act;
   if(a==='age-yes'){SV.age=true;saveLocal();render()}
@@ -800,7 +893,7 @@ document.addEventListener('keydown',function(e){
 });
 document.addEventListener('keypress',function(e){if(e.key==='Enter'&&e.target&&e.target.id==='nick'){e.preventDefault();var b=document.querySelector('[data-act="nick"]');if(b)b.click()}});
 
-window.__dh={H:H,FACTS:FACTS,pickFacts:pickFacts,extraFacts:extraFacts,bustOnHit:bustOnHit,DEALER:DEALER,BUST:BUST,buildDay:buildDay,handScore:handScore,dayScore:dayScore,summarise:summarise,styleOf:styleOf,validNick:validNick,state:S,SV:function(){return SV},crowdFor:crowdFor,setPlays:function(p){PLAYS=p},setDb:function(s){dbState=s}};
+window.__dh={TQ:TQ,pickStories:pickStories,POOLDATA:POOL,H:H,FACTS:FACTS,pickFacts:pickFacts,extraFacts:extraFacts,bustOnHit:bustOnHit,DEALER:DEALER,BUST:BUST,buildDay:buildDay,handScore:handScore,dayScore:dayScore,summarise:summarise,styleOf:styleOf,validNick:validNick,state:S,SV:function(){return SV},crowdFor:crowdFor,setPlays:function(p){PLAYS=p},setDb:function(s){dbState=s}};
 render();
 initDb();
 })();

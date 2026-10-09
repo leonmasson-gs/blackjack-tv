@@ -44,7 +44,7 @@ Optional real-browser check (downloads a Chromium build the first time):
 cd tests/browser && npm install && npm run check      # add -- --quick for two widths, -- --shots to save screenshots
 ```
 
-It opens every screen at 320, 360, 390, 768, 1024, 1280 and 1920px, with the same security headers as production, and fails if anything scrolls sideways, throws an error, or if the fonts don't load.
+It opens every screen at 320, 360, 390, 768, 1024, 1280 and 1920px, with the same security headers as production, and fails if anything scrolls sideways, throws an error, if the fonts don't load, or if any text on screen is below WCAG contrast.
 
 For the independent maths check (a few minutes, needs `numpy`): `python3 engine/mc_check.py`. It plays hands 1.5 million times each with its own dealer logic and compares the results with `engine.py`.
 
@@ -66,27 +66,34 @@ One page, two layouts, chosen automatically by screen width (no setting for the 
 
 The breakpoints are the two `@media (min-width: ...)` blocks at the end of the CSS in `src/template.html`.
 
-## Trivia
+## Trivia and the daily hook
 
-Facts live in the `FACTS` list in `src/template.html`. Each has:
+What keeps a player in the round, and gives them something after it:
 
-| Field | Meaning |
+| Where | What |
 |---|---|
-| `type` | `why`, `myth`, `trivia` or `honest` (sets the lead-in: "Why it works.", "Myth.", "Did you know?", "Worth remembering.") |
-| `sp` | prefer this fact when the hand on screen matches `when(h)` |
-| `g` | makes sense with no hand on screen, so it can appear on the home screen and in "Keep learning" |
-| `src` | `engine` (computed from, or checked against, the engine), `review` (reasoning to be reviewed) or `verify` (needs a source check before launch) |
+| Home screen | Today's first hand with Hit, Stand and Double right there. One tap answers it and starts the round. Plus a fact of the day. |
+| Under each hand | A fact that fits the hand (a "why", a myth, or a number for that dealer card), then a **history story**. The day's five stories are picked at random, sorted oldest first, so the round tells a short history of cards and blackjack. |
+| Result screen, "Keep learning" | A **bonus question** (not scored), the day's five stories recapped as a timeline, two more general facts, and "Blackjack by the numbers" (dealer bust rates, hit-bust chances, where the dealer finishes). |
 
-Each hand shows one fact (up to three of a day's five are hand-specific), the home screen shows a fact of the day, and the result screen has two more plus "Blackjack by the numbers" (dealer bust rates, bust chances when you hit, where the dealer finishes). The numbers come from `data/pool.json`, so they change if the rules change.
+Facts live in the `FACTS` list in `src/template.html` (39 entries, 9 of them history). Bonus questions are the `TQ` list (14 entries). Each has a `src`:
 
-`tests/content.test.js` checks that every hand-specific fact is true for every hand it can appear on. Add a test line there when you add a fact with a numeric or hand-specific claim.
+| `src` | Meaning |
+|---|---|
+| `engine` | computed from, or checked against, the engine (`tests/content.test.js` re-checks these against `data/pool.json`) |
+| `review` | reasoning to be reviewed |
+| `verify` | needs a source check before launch (12 facts and 5 questions are in this state, including every history item) |
+
+Other fields: `type` (`why`, `myth`, `trivia`, `honest`, `history`), `sp` (prefer when the hand matches `when(h)`), `g` (makes sense with no hand on screen), and for history `y` (sort year) and `yr` (label shown). Seeding is by date, so everyone gets the same facts, stories and question each day.
+
+About 39 facts means roughly a week before a regular player sees repeats. The cheapest way to extend it is more entries in `FACTS` and `TQ`; add a line to `tests/content.test.js` for anything with a number in it.
 
 ## What is and isn't built
 
 | Built | Not built yet |
 |---|---|
 | Daily five from a 133-hand pool, scoring, per-hand explanations, facts, instinct traps, play styles | A backend (leaderboard and player percentages only work inside Claude today) |
-| Result screen, share text, practice round, the fact bank, fact of the day, "Keep learning" numbers | Server-side scoring and a real one-play-a-day limit |
+| Result screen, share text, practice round, trivia (facts, history stories, bonus question, numbers) | Server-side scoring and a real one-play-a-day limit |
 | Age gate (self-declared), nickname checks | Real age verification |
 | Self-hosted fonts, no cookies, no third-party requests | Email sign-up (the button only records interest), invite links, partner offer |
 

@@ -38,7 +38,9 @@ for soft, totals in ((False, range(9, 17)), (True, range(13, 19))):
 bust = {upname(u): round(dealer_final(u).get('bust', 0), 4) for u in UPS}
 # Whole-game dealer outcome (all upcards, natural blackjack counted as 21) and natural blackjack chance. Used by the trivia.
 d = dealer_dist(0, False)
-stats = {'dealer': {('bust' if k == 'bust' else str(k)): round(v, 4) for k, v in d.items()}, 'natural_bj': round(8/169, 4)}
+stats = {'dealer': {('bust' if k == 'bust' else str(k)): round(v, 4) for k, v in d.items()}, 'natural_bj': round(8/169, 4),
+         # where the dealer finishes for each upcard (after the blackjack check); drives the per-hand dealer trivia
+         'up_final': {upname(u): {('bust' if k == 'bust' else str(k)): round(v, 4) for k, v in dealer_final(u).items()} for u in UPS}}
 with open(OUT, "w") as f: json.dump({'hands': hands, 'bust': bust, 'stats': stats}, f, separators=(',', ':'))
 print(f"{len(hands)} hands written to {os.path.relpath(OUT)}; {len(dropped)} near-ties left out: {', '.join(dropped)}")
 print("dealer bust % :", {k: round(v*100, 1) for k, v in bust.items()})
