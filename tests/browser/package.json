@@ -1,0 +1,7 @@
+{
+  "name": "daily-hand-browser-check",
+  "private": true,
+  "type": "module",
+  "scripts": { "check": "node layout-check.mjs" },
+  "devDependencies": { "@sparticuz/chromium": "^153.0.0", "puppeteer-core": "^25.0.0" }
+}

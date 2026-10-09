@@ -168,6 +168,74 @@ details.panel summary{cursor:pointer;font-weight:700}
 .about li{margin-bottom:.4em}
 .back{margin:4px 0 4px -10px}
 .note{background:color-mix(in srgb,var(--ink) 5%,transparent);border-radius:10px;padding:10px 12px;font-size:.9rem}
+
+/* ---- layout: phone first, wider screens below ---- */
+.top{gap:0 4px;flex-wrap:wrap}
+.brand{white-space:nowrap;font-size:1.35rem}
+.top .link{padding:8px 8px;font-size:.875rem;white-space:nowrap}
+.actions{margin-top:0}
+.split>.col-b{margin-top:16px}
+.narrow{max-width:680px;margin:0 auto}
+.hero-table{margin-bottom:16px}
+.factbar{margin-top:20px}
+.learn{margin-top:30px}
+.learn h2{font-size:1.4rem;margin-bottom:12px}
+.learn-grid{display:grid;gap:12px;margin-bottom:14px}
+.fact-card{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:12px 14px}
+details.numbers-d summary{padding:2px 0}
+.numbers{display:grid;gap:24px;margin-top:14px}
+.numbers h3{font-size:1.05rem;margin-bottom:6px}
+table.mini-t{width:100%;border-collapse:collapse;font-size:.9375rem}
+table.mini-t th{font-weight:600;text-align:left;padding:4px 10px 4px 0;width:76px;white-space:nowrap}
+table.mini-t td{padding:4px 0}
+table.mini-t td.bc{width:100%}
+table.mini-t td.r{text-align:right;white-space:nowrap;padding-left:10px;font-variant-numeric:tabular-nums}
+.mini{display:block;height:12px;border-radius:6px;background:color-mix(in srgb,var(--ink) 9%,transparent);overflow:hidden}
+.mini span{display:block;height:100%;background:var(--accent)}
+@media (min-width:600px){
+  .wrap{max-width:680px}
+}
+@media (min-width:960px){
+  .wrap{max-width:1160px;padding:0 40px 56px}
+  .top{padding:22px 0 18px}
+  .brand{font-size:1.75rem}
+  .top .link{font-size:1rem;padding:8px 14px}
+  .top nav{gap:8px}
+  /* two columns on play and result */
+  .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:36px;align-items:start}
+  .split>.col-b{margin-top:0}
+  .split.play>.col-a{position:sticky;top:20px}
+  .split.result{grid-template-columns:minmax(0,5fr) minmax(0,6fr)}
+  .actions{gap:14px}
+  .act{min-height:104px;padding:16px 8px}
+  .act b{font-size:1.5rem}
+  .act span{font-size:.95rem}
+  /* bigger table and cards */
+  .table{padding:28px 32px 32px;border-radius:26px}
+  .seat-label{font-size:1rem}
+  .seat + .seat{margin-top:22px;padding-top:22px}
+  .cards{gap:14px}
+  .card{width:92px;height:130px;padding:10px 11px;border-radius:11px}
+  .card .rk{font-size:2.15rem}
+  .card .su{font-size:1.6rem}
+  .card .big{font-size:2.5rem;right:11px;bottom:8px}
+  .pill{font-size:1.05rem;padding:4px 14px}
+  /* home: text left, table right */
+  .home{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"hero table" "cta table" "fact fact";column-gap:56px;align-items:start}
+  .home .hero{grid-area:hero;margin-top:36px}
+  .home .hero-table{grid-area:table;margin:36px 0 0}
+  .home .cta{grid-area:cta}
+  .home .factbar{grid-area:fact;margin-top:32px}
+  .hero h1{font-size:3.4rem}
+  .hero p{font-size:1.2rem}
+  .score .num{font-size:6rem}
+  .panel{padding:20px}
+  .evs{gap:10px}
+  .learn{margin-top:44px}
+  .learn-grid{grid-template-columns:1fr 1fr;gap:20px}
+  .fact-card{padding:16px 18px;font-size:1.05rem}
+  .numbers{grid-template-columns:repeat(3,minmax(0,1fr));gap:36px}
+}
 </style>
 </head>
 <body>
@@ -281,33 +349,76 @@ function avgWindow(from,len){
 
 /* ---------- facts (config; every fact carries a source / review status) ---------- */
 function bustPct(u){return Math.round(BUST[upName(u)]*100)}
+var DEALER = POOL.stats.dealer;
+function bustOnHit(t){var n=0;for(var v=2;v<=10;v++){if(t+v>21)n+=(v===10?4:1)}return n}   /* cards out of 13 that bust a hard total; an Ace never busts t<=20 */
+/* g = makes sense without a hand on screen (home page, Keep learning); sp = preferred when it matches the hand;
+   src: engine = computed or checked by the engine, review = reasoning to be reviewed, verify = needs a source check before launch */
 var FACTS=[
- {id:'bust',type:'why',src:'engine',when:function(h){return h.up<=6||h.up>=10},text:function(h){var cmp=[6,10,11].filter(function(x){return x!==h.up}).map(function(x){return (x===11?'an Ace':'a '+x)+' about '+bustPct(x)+'%'});return 'A dealer showing '+upName(h.up)+' busts about '+bustPct(h.up)+'% of the time. For comparison: '+cmp.join(', ')+'.'}},
- {id:'weak',type:'why',src:'review',when:function(){return true},text:function(){return 'Most of the chart hinges on one question: is the dealer\u2019s card weak (2 to 6) or strong (7 through Ace)?'}},
- {id:'ev',type:'why',src:'review',when:function(){return true},text:function(){return 'Expected value is your average result if you faced the same spot thousands of times. A good decision can still lose this hand, and that is not a mistake.'}},
- {id:'soft',type:'why',src:'review',when:function(h){return h.soft},text:function(){return 'A soft hand counts an Ace as 11. Because the Ace can drop to 1, one more card can never bust a soft hand, which is why hitting and doubling soft totals carries less risk.'}},
- {id:'dbl',type:'why',src:'review',when:function(h){return h.best==='double'&&!h.soft},text:function(){return 'Doubling is strongest when one more card is likely to give you a big total and the dealer is weak. Hard 11 against a 6 is the classic case.'}},
- {id:'s17',type:'why',src:'review',when:function(){return true},text:function(){return 'Basic strategy shifts slightly with the table rules. This game assumes the dealer stands on every 17; where the dealer hits soft 17, a few plays change.'}},
- {id:'s18',type:'myth',src:'engine',when:function(h){return h.soft&&h.total===18&&(h.up===9||h.up===10)},text:function(){return 'Soft 18 sounds strong, so many players stand against a 9 or 10. Hitting is the better play, because the Ace means no card can bust you.'}},
- {id:'h12',type:'myth',src:'engine',when:function(h){return !h.soft&&h.total===12&&h.up<=3},text:function(){return 'Hitting a 12 against a dealer 2 or 3 feels reckless. It is the better play, but only by a small margin.'}},
- {id:'h16',type:'myth',src:'engine',when:function(h){return !h.soft&&h.total>=15&&h.up>=7},text:function(){return 'Standing on 16 against a dealer 10 feels safe, but it is close to a coin flip. In this model hitting and standing are within 0.01 of each other, and both lose far more than they win.'}},
- {id:'bj',type:'trivia',src:'engine',when:function(){return true},text:function(){return 'About 1 starting hand in 21 (4.7%) is a natural blackjack, an Ace plus a ten-value card.'}},
- {id:'name',type:'trivia',src:'verify',when:function(){return true},text:function(){return 'The game was once simply called twenty-one. One popular story links the name \u201Cblackjack\u201D to a bonus for an Ace of spades with a black Jack, though sources differ.'}},
- {id:'1956',type:'trivia',src:'verify',when:function(){return true},text:function(){return 'In 1956 four US Army engineers published the first mathematically derived blackjack strategy, working it out on desk calculators.'}},
- {id:'edge',type:'honest',src:'verify',when:function(){return true},text:function(){return 'Basic strategy lowers the house edge. It does not remove it, and perfect play still loses plenty of hands.'}},
- {id:'quiz',type:'honest',src:'review',when:function(){return true},text:function(){return 'This game scores decisions, not outcomes. No cards are dealt after you choose, so luck cannot change your score.'}}
+ {id:'hitBust',type:'why',src:'engine',sp:true,when:function(h){return !h.soft&&h.total>=12&&h.total<=16},text:function(h){var n=bustOnHit(h.total);return 'Hit a hard '+h.total+' and you bust with '+n+' cards out of every 13 on average ('+pct(n/13)+'%). Ten-value cards are the main reason: 10, J, Q and K all count as 10.'}},
+ {id:'safeHit',type:'why',src:'engine',sp:true,g:true,when:function(h){return !h.soft&&h.total<=11},text:function(){return 'A hard total of 11 or less can never bust on the next card, so the only question is whether a better move exists.'}},
+ {id:'standWeak',type:'why',src:'engine',sp:true,g:true,when:function(h){return !h.soft&&h.best==='stand'},text:function(){return 'A dealer showing a 6 busts about '+bustPct(6)+'% of the time, more than any other upcard. Standing is not passive: you win by letting them take the risk.'}},
+ {id:'weak',type:'why',src:'review',g:true,when:function(){return true},text:function(){return 'Most of the chart hinges on one question: is the dealer\u2019s card weak (2 to 6) or strong (7 through Ace)?'}},
+ {id:'ev',type:'why',src:'review',g:true,when:function(){return true},text:function(){return 'Expected value is your average result if you faced the same spot thousands of times. A good decision can still lose this hand, and that is not a mistake.'}},
+ {id:'soft',type:'why',src:'review',sp:true,g:true,when:function(h){return h.soft},text:function(){return 'A soft hand counts an Ace as 11. Because the Ace can drop to 1, one more card can never bust a soft hand, which is why hitting and doubling soft totals carries less risk.'}},
+ {id:'dblSoft',type:'why',src:'review',sp:true,g:true,when:function(h){return h.soft&&h.best==='double'},text:function(){return 'Doubling a soft hand takes only one card, and no single card can bust it. What you risk is ending on a weak total, not busting.'}},
+ {id:'dbl',type:'why',src:'review',sp:true,g:true,when:function(h){return h.best==='double'&&!h.soft},text:function(){return 'Doubling is strongest when one more card is likely to give you a big total and the dealer is weak. Hard 11 against a 6 is the classic case.'}},
+ {id:'s17',type:'why',src:'review',g:true,when:function(){return true},text:function(){return 'Basic strategy shifts slightly with the table rules. This game assumes the dealer stands on every 17; where the dealer hits soft 17, a few plays change.'}},
+ {id:'dealerRule',type:'why',src:'review',g:true,when:function(){return true},text:function(){return 'The dealer never makes a choice. Under these rules they draw on 16 or less and stand on 17 or more, so the whole dealer hand is decided by the cards alone.'}},
+ {id:'dealerAll',type:'why',src:'engine',g:true,when:function(){return true},text:function(){return 'Over many hands the dealer busts about '+pct(DEALER.bust)+'% of the time. When they do not, 20 is their most common finish, at about '+pct(DEALER['20'])+'%.'}},
+ {id:'stand20',type:'why',src:'engine',g:true,when:function(){return true},text:function(){return 'Stand on a hard 20 and, against a random dealer hand, you win about '+pct(DEALER.bust+DEALER['17']+DEALER['18']+DEALER['19'])+'%, tie about '+pct(DEALER['20'])+'% and lose about '+pct(DEALER['21'])+'%.'}},
+ {id:'s18',type:'myth',src:'engine',sp:true,g:true,when:function(h){return h.soft&&h.total===18&&(h.up===9||h.up===10)},text:function(){return 'Soft 18 sounds strong, so many players stand against a 9 or 10. Hitting is the better play, because the Ace means no card can bust you.'}},
+ {id:'h12',type:'myth',src:'engine',sp:true,g:true,when:function(h){return !h.soft&&h.total===12&&h.up<=3},text:function(){return 'Hitting a 12 against a dealer 2 or 3 feels reckless. It is the better play, but only by a small margin.'}},
+ {id:'h16',type:'myth',src:'engine',sp:true,g:true,when:function(h){return !h.soft&&h.total>=15&&h.up>=7},text:function(){return 'Standing on 16 against a dealer 10 feels safe, but it is close to a coin flip. In this model hitting and standing are within 0.01 of each other, and both lose far more than they win.'}},
+ {id:'bj',type:'trivia',src:'engine',g:true,when:function(){return true},text:function(){return 'About 1 starting hand in 21 (4.7%) is a natural blackjack, an Ace plus a ten-value card.'}},
+ {id:'twoCard',type:'trivia',src:'engine',g:true,when:function(){return true},text:function(){return 'A single deck allows 1,326 different two-card starting hands. 64 of them are a natural blackjack, a little under 5%.'}},
+ {id:'ten',type:'trivia',src:'engine',g:true,when:function(){return true},text:function(){return 'Four ranks (10, J, Q and K) all count as 10, so about 4 cards in every 13 are worth 10. It is the most common card value by a wide margin.'}},
+ {id:'ace',type:'trivia',src:'engine',g:true,when:function(){return true},text:function(){return 'The Ace is the only card whose value can change during a hand. It counts as 11 until that would bust you, then drops to 1.'}},
+ {id:'hole',type:'trivia',src:'verify',g:true,when:function(){return true},text:function(){return 'The dealer\u2019s face-down card is called the hole card. In US-style games the dealer checks it for blackjack straight away when showing an Ace or a ten-value card.'}},
+ {id:'name',type:'trivia',src:'verify',g:true,when:function(){return true},text:function(){return 'The game was once simply called twenty-one. One popular story links the name \u201Cblackjack\u201D to a bonus for an Ace of spades with a black Jack, though sources differ.'}},
+ {id:'cervantes',type:'trivia',src:'verify',g:true,when:function(){return true},text:function(){return 'A card game called \u201Cveintiuna\u201D (twenty-one) appears in a story by Cervantes from the early 1600s, one of the earliest written mentions of a game like blackjack.'}},
+ {id:'pontoon',type:'trivia',src:'verify',g:true,when:function(){return true},text:function(){return 'A close cousin of blackjack called pontoon is played in the UK, Ireland and Australia. Players say \u201Ctwist\u201D and \u201Cstick\u201D instead of hit and stand.'}},
+ {id:'1956',type:'trivia',src:'verify',g:true,when:function(){return true},text:function(){return 'In 1956 four US Army engineers published the first mathematically derived blackjack strategy, working it out on desk calculators.'}},
+ {id:'edge',type:'honest',src:'verify',g:true,when:function(){return true},text:function(){return 'Basic strategy lowers the house edge. It does not remove it, and perfect play still loses plenty of hands.'}},
+ {id:'quiz',type:'honest',src:'review',g:true,when:function(){return true},text:function(){return 'This game scores decisions, not outcomes. No cards are dealt after you choose, so luck cannot change your score.'}},
+ {id:'indep',type:'honest',src:'review',g:true,when:function(){return true},text:function(){return 'Past results never make the next hand \u201Cdue\u201D. Each hand is judged on its own.'}}
 ];
 var FACT_LEAD={why:'Why it works.',myth:'Myth.',trivia:'Did you know?',honest:'Worth remembering.'};
+function shuffled(arr,rnd){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(rnd()*(i+1));var x=a[i];a[i]=a[j];a[j]=x}return a}   /* Fisher-Yates: same order in every browser */
 function pickFacts(deals,day){
-  var rnd=rngFor('facts|'+day),order=['trivia','myth','why','honest','why'],used={},out=[];
-  var bank=FACTS.slice().sort(function(){return rnd()-.5});
+  var rnd=rngFor('facts|'+day),order=['trivia','myth','why','honest','why'],used={},out=[],sp=0;
+  var bank=shuffled(FACTS,rnd);
   deals.forEach(function(d,i){
-    var f=bank.filter(function(x){return !used[x.id]&&x.type===order[i]&&x.when(d.h)})[0]
-      ||bank.filter(function(x){return !used[x.id]&&x.when(d.h)})[0]||bank[0];
+    var h=d.h,f=null;
+    var spec=bank.filter(function(x){return !used[x.id]&&x.sp&&x.when(h)});
+    if(spec.length&&sp<3&&rnd()<.75){f=spec[0];sp++}
+    if(!f)f=bank.filter(function(x){return !used[x.id]&&x.g&&x.type===order[i]&&x.when(h)})[0]
+      ||bank.filter(function(x){return !used[x.id]&&x.g&&x.when(h)})[0]||bank[0];
     used[f.id]=1;out.push(f);
   });
   return out;
 }
+function extraFacts(seed,skip,n){   /* general facts not already shown this round */
+  var used={};(skip||[]).forEach(function(f){used[f.id]=1});
+  return shuffled(FACTS.filter(function(f){return f.g&&!used[f.id]}),rngFor('extra|'+seed)).slice(0,n);
+}
+function factHtml(f,cls){return '<div class="'+(cls||'fact')+'"><b>'+FACT_LEAD[f.type]+'</b> '+esc(f.text())+'</div>'}
+function barRow(label,frac,right){return '<tr><th scope="row">'+label+'</th><td class="bc"><span class="mini" aria-hidden="true"><span style="width:'+Math.max(2,Math.round(frac*100))+'%"></span></span></td><td class="r">'+right+'</td></tr>'}
+function numbersHtml(){
+  var ups=['2','3','4','5','6','7','8','9','10','A'];
+  var t1=ups.map(function(u){return barRow(u,BUST[u]/.5,pct(BUST[u])+'%')}).join('');
+  var t2=[12,13,14,15,16,17].map(function(n){var k=bustOnHit(n);return barRow('Hard '+n,k/13,k+' in 13 ('+pct(k/13)+'%)')}).join('');
+  var t3=['17','18','19','20','21','bust'].map(function(k){return barRow(k==='bust'?'Bust':k,DEALER[k]/.3,pct(DEALER[k])+'%')}).join('');
+  return '<details class="panel numbers-d"><summary>Blackjack by the numbers</summary><div class="numbers">'
+   +'<div><h3>How often the dealer busts</h3><table class="mini-t"><caption class="sr">Chance the dealer busts, by the card showing</caption>'+t1+'</table><p class="small muted">By the card the dealer shows, once they have checked for blackjack.</p></div>'
+   +'<div><h3>How often a hit busts you</h3><table class="mini-t"><caption class="sr">Chance a hit busts you, by hard total</caption>'+t2+'</table><p class="small muted">On average, by your hard total. Aces count as 1 here.</p></div>'
+   +'<div><h3>Where the dealer finishes</h3><table class="mini-t"><caption class="sr">Dealer final totals over many hands</caption>'+t3+'</table><p class="small muted">Over many hands. The 21 includes natural blackjacks.</p></div>'
+   +'</div></details>';
+}
+function learnHtml(R){
+  var ex=extraFacts(R.mode==='daily'?R.day:'practice'+R.i,R.facts,2);
+  return '<section class="learn" aria-labelledby="learn-h"><h2 id="learn-h">Keep learning</h2><div class="learn-grid">'+ex.map(function(f){return factHtml(f,'fact-card')}).join('')+'</div>'+numbersHtml()+'</section>';
+}
+function dayFact(day){return extraFacts('home|'+day,[],1)[0]}
 function whyLine(h){
   var u=upName(h.up),b=bustPct(h.up),w=pct(h.stand[0]),l=pct(h.stand[2]),hd=desc(h),lo=hd.toLowerCase();
   if(h.best==='double')return 'Dealer shows '+u+' and busts '+b+'% of the time. '+hd+' is a strong spot to take exactly one card and let the hand count twice.'+(h.soft?' A soft hand cannot bust on one card, so the downside is small.':'');
@@ -460,12 +571,13 @@ function vHome(){
   var partial=e&&!played&&e.a&&e.a.length>0;
   var cta=played?'<button class="btn primary block" data-act="see-result">See today\u2019s result ('+Math.round(e.s)+'%)</button>'
     :'<button class="btn primary block" data-act="play">'+(partial?'Continue today\u2019s five':'Play today\u2019s five')+'</button>';
-  return '<section class="hero"><p class="small muted" style="margin:0">No. '+dayNum(day)+' &nbsp;'+esc(niceDate(day))+'</p><h1>Five hands. One right answer each.</h1>'
+  var df=dayFact(day);
+  return '<div class="home"><section class="hero"><p class="small muted" style="margin:0">No. '+dayNum(day)+' &nbsp;'+esc(niceDate(day))+'</p><h1>Five hands. One right answer each.</h1>'
    +'<p>Choose Hit, Stand or Double. Every player gets the same five hands, and you are scored on how close you play to basic strategy.</p></section>'
-   +'<div class="table" style="margin-bottom:16px"><div class="seat"><div class="seat-label"><span>Dealer shows 9</span></div><div class="cards">'
+   +'<div class="table hero-table"><div class="seat"><div class="seat-label"><span>Dealer shows 9</span></div><div class="cards">'
    +cardHtml({v:9,r:'9',s:'♣'},0)+cardHtml(null,1,true)+'</div></div><div class="seat"><div class="seat-label"><span>Your hand</span><span class="pill">Soft 18</span></div><div class="cards">'
    +cardHtml({v:11,r:'A',s:'♠'},2)+cardHtml({v:7,r:'7',s:'♦'},3)+'</div><p class="ask">Soft 18 against a 9. What would you do?</p></div></div>'
-   +'<div class="stack">'+cta
+   +'<div class="stack cta">'+cta
    +(played?'<p class="small muted">Next five at '+esc(next)+' your time (midnight UTC).</p>':'')
    +'<div class="row" style="justify-content:space-between"><button class="link" data-act="practice" style="margin-left:-10px">Try a practice round</button>'
    +'<span class="small muted">'+(FEATURES.streak?(st>0?'Streak: '+st+' day'+(st===1?'':'s')+' at '+CFG.streakMin+'%+':'No streak yet'):'')+'</span></div>'
@@ -473,7 +585,8 @@ function vHome(){
    +'<p class="small" style="margin:0 0 6px">After each choice you see how all three options score on average, and how other players chose.</p>'
    +'<p class="small" style="margin:0 0 6px">Nothing is dealt afterwards, so luck cannot change your score. 100% means you played every hand perfectly.</p>'
    +'<p class="small muted" style="margin:0"><b>Double</b> means take exactly one more card, then stand. The hand counts twice, for better or worse.</p></div>'
-   +'<p class="small muted">Rules: dealer stands on all 17s. Double on any two cards. No splits.</p></div>';
+   +'<p class="small muted">Rules: dealer stands on all 17s. Double on any two cards. No splits.</p></div>'
+   +'<aside class="panel factbar" aria-label="Fact of the day">'+factHtml(df)+'</aside></div>';
 }
 function vPlay(){
   var R=S.round,d=R.deals[R.i],h=d.h,i=R.i;
@@ -481,11 +594,11 @@ function vPlay(){
   var head='<div class="dots" aria-hidden="true">'+dots+'<span class="n">Hand '+(i+1)+' of 5</span></div><h1 id="hand-h" tabindex="-1" class="sr">Hand '+(i+1)+' of 5: '+desc(h)+' against dealer '+upName(h.up)+'</h1>'
     +(R.mode==='practice'?'<p class="small muted" style="margin:0 0 8px">Practice round. Not scored on the board.</p>':'');
   if(R.phase==='choose'){
-    return head+tableHtml(d)+'<div class="actions" role="group" aria-label="Your move">'
+    return head+'<div class="split play"><div class="col-a">'+tableHtml(d)+'</div><div class="col-b"><div class="actions" role="group" aria-label="Your move">'
       +'<button class="act" data-choose="H"><b>Hit</b><span>Take a card</span></button>'
       +'<button class="act" data-choose="S"><b>Stand</b><span>Keep your total</span></button>'
       +'<button class="act" data-choose="D"><b>Double</b><span>One card, counts twice</span></button></div>'
-      +'<p class="small muted" style="margin-top:12px">With a button focused, you can also press H, S or D.</p>';
+      +'<p class="small muted" style="margin-top:12px">With a button focused, you can also press H, S or D.</p></div></div>';
   }
   var code=R.codes[i],a=ACT[code],v=verdict(h,a),sc=Math.round(handScore(h,a));
   var vt={g:['\u2713','Best play'],y:['~','Close'],r:['\u2717','Not best']}[v];
@@ -500,12 +613,12 @@ function vPlay(){
   var trap=h.trap&&'<div class="trap"><b>Instinct trap.</b> The beginner\u2019s rule says '+h.instinct+'. The best play here is '+h.best+'.</div>'||'';
   var fact=R.facts[i];
   var line=v==='g'?'You played it the way basic strategy does.':'You chose '+a+'. Basic strategy says '+h.best+'. Your choice scores '+sc+'% on this hand.';
-  return head+tableHtml(d)+'<div class="panel" style="margin-top:14px"><div class="verdict"><span class="badge '+v+'" aria-hidden="true">'+vt[0]+' '+vt[1]+'</span><h2 id="fb" tabindex="-1"><span class="sr">'+vt[1]+'. </span>'+(v==='g'?'Nicely played':'Here is the maths')+'</h2></div>'
+  return head+'<div class="split play"><div class="col-a">'+tableHtml(d)+'</div><div class="col-b"><div class="panel"><div class="verdict"><span class="badge '+v+'" aria-hidden="true">'+vt[0]+' '+vt[1]+'</span><h2 id="fb" tabindex="-1"><span class="sr">'+vt[1]+'. </span>'+(v==='g'?'Nicely played':'Here is the maths')+'</h2></div>'
     +'<p>'+line+'</p><div class="evs" role="img" aria-label="Average result for each option: '+['hit','stand','double'].map(function(k){return k+' '+ev2(h.ev[k])}).join(', ')+'">'+bars+'</div>'
     +'<p class="small muted" style="margin-top:8px">Average result per hand over many hands. Doubling counts twice, so its bars run longer.</p>'
     +'<p>'+esc(whyLine(h))+'</p>'+trap+crowdLine(R,i,code,h)
     +'<div class="fact"><b>'+FACT_LEAD[fact.type]+'</b> '+esc(fact.text(h))+'</div></div>'
-    +'<button class="btn primary block" style="margin-top:14px" data-act="next">'+(i>=4?'See my result':'Next hand')+'</button>';
+    +'<button class="btn primary block" style="margin-top:14px" data-act="next">'+(i>=4?'See my result':'Next hand')+'</button></div></div>';
 }
 function crowdLine(R,i,code,h){
   if(R.mode==='practice')return '';
@@ -536,10 +649,10 @@ function vResult(){
     return '<tr><td>'+desc(r.h)+' vs '+upName(r.h.up)+same+'</td><td>'+cap(r.action)+'</td><td>'+cap(r.h.best)+'</td><td>'+Math.round(r.score)+'%</td></tr>';
   }).join('');
   var sampleBanner=(SAMPLE&&daily)?'<div class="note"><span class="sample">Sample data</span> Player percentages on this page are invented to show the layout. Nothing here is real or saved. <button class="link" data-act="sample" style="padding:2px 4px">Turn off</button></div>':'';
-  var out='<section class="stack"><h1 class="sr">Your result</h1>'+sampleBanner+'<div><p class="small muted" style="margin:0">'+(daily?'No. '+dayNum(R.day)+' &nbsp;'+esc(niceDate(R.day)):'Practice round')+'</p>'
+  var out='<section class="stack"><h1 class="sr">Your result</h1>'+sampleBanner+'<div class="split result"><div class="col-a stack"><div><p class="small muted" style="margin:0">'+(daily?'No. '+dayNum(R.day)+' &nbsp;'+esc(niceDate(R.day)):'Practice round')+'</p>'
    +'<div class="score"><span class="num">'+Math.round(D.score)+'%</span><span class="of">of optimal play</span></div>'
    +'<div class="style"><b>'+STYLES[D.st].n+'</b><br>'+STYLES[D.st].t+'</div><div class="grid" role="group" aria-label="Hand results">'+tiles+'</div></div>'
-   +'<div class="panel"><table class="hands"><caption class="sr">Hand by hand</caption>'+tr+'</table></div>';
+   +'<div class="panel"><table class="hands"><caption class="sr">Hand by hand</caption>'+tr+'</table></div></div><div class="col-b stack">';
   // compare
   var items=[],fin=c?c.scores.length:0;
   if(daily){
@@ -584,7 +697,7 @@ function vResult(){
   }else{
     out+='<div class="row"><button class="btn primary" data-act="practice">Another practice round</button><button class="btn ghost" data-go="home">Back home</button></div>';
   }
-  return out+'</section>';
+  return out+'</div></div>'+learnHtml(R)+'</section>';
 }
 function boardRows(tab){
   var day=today(),wk=weekStart(day),rows=[];
@@ -631,11 +744,11 @@ function vAbout(){
 }
 function render(){
   var v=S.view;
-  if(underFlag()){app.innerHTML=vUnder()}
-  else if(!SV.age&&v!=='under'){app.innerHTML=vGate()}
-  else{
-    app.innerHTML={home:vHome,play:vPlay,result:vResult,board:vBoard,about:vAbout,under:vUnder}[v]();
-  }
+  var html,narrow=false;
+  if(underFlag()){html=vUnder();narrow=true}
+  else if(!SV.age&&v!=='under'){html=vGate();narrow=true}
+  else{html={home:vHome,play:vPlay,result:vResult,board:vBoard,about:vAbout,under:vUnder}[v]();narrow=(v==='board'||v==='about'||v==='under')}
+  app.innerHTML=narrow?'<div class="narrow">'+html+'</div>':html;
   document.getElementById('nav-board').setAttribute('aria-current',v==='board'?'page':'false');
   document.getElementById('nav-about').setAttribute('aria-current',v==='about'?'page':'false');
   var f=S.focus;S.focus=null;
@@ -687,7 +800,7 @@ document.addEventListener('keydown',function(e){
 });
 document.addEventListener('keypress',function(e){if(e.key==='Enter'&&e.target&&e.target.id==='nick'){e.preventDefault();var b=document.querySelector('[data-act="nick"]');if(b)b.click()}});
 
-window.__dh={H:H,buildDay:buildDay,handScore:handScore,dayScore:dayScore,summarise:summarise,styleOf:styleOf,validNick:validNick,state:S,SV:function(){return SV},crowdFor:crowdFor,setPlays:function(p){PLAYS=p},setDb:function(s){dbState=s}};
+window.__dh={H:H,FACTS:FACTS,pickFacts:pickFacts,extraFacts:extraFacts,bustOnHit:bustOnHit,DEALER:DEALER,BUST:BUST,buildDay:buildDay,handScore:handScore,dayScore:dayScore,summarise:summarise,styleOf:styleOf,validNick:validNick,state:S,SV:function(){return SV},crowdFor:crowdFor,setPlays:function(p){PLAYS=p},setDb:function(s){dbState=s}};
 render();
 initDb();
 })();

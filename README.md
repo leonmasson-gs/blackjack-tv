@@ -38,6 +38,14 @@ cd tests && npm install && npm test
 
 That rebuilds the page, then runs: the game-logic tests, one test per persona finding (`tests/personas.test.js`), a comparison of every hand with the published basic-strategy chart, and a contrast check on the colour tokens. Takes a few seconds.
 
+Optional real-browser check (downloads a Chromium build the first time):
+
+```bash
+cd tests/browser && npm install && npm run check      # add -- --quick for two widths, -- --shots to save screenshots
+```
+
+It opens every screen at 320, 360, 390, 768, 1024, 1280 and 1920px, with the same security headers as production, and fails if anything scrolls sideways, throws an error, or if the fonts don't load.
+
 For the independent maths check (a few minutes, needs `numpy`): `python3 engine/mc_check.py`. It plays hands 1.5 million times each with its own dealer logic and compares the results with `engine.py`.
 
 ## How the maths works
@@ -49,12 +57,36 @@ For the independent maths check (a few minutes, needs `numpy`): `python3 engine/
 - "Instinct trap" means the best play differs from a simple beginner's rule that we defined ourselves (`instinct()` in `engine/make_pool.py`).
 - A bug in an earlier version (a soft hand that drew an Ace lost its "soft" flag) made every dealer-Ace hand wrong. It was caught by the independent simulation and fixed. Keep `mc_check.py` in the loop if the engine changes.
 
+## Layout
+
+One page, two layouts, chosen automatically by screen width (no setting for the player):
+
+- **Under 960px (phones, tablets):** one column. Between 600 and 959px the column is wider (680px).
+- **960px and up (laptops, desktops):** the home screen puts the text and button beside the card table. A hand shows the table on the left with the choices and explanation on the right, so it fits on one screen. The result screen puts the score and hand list beside the panels, and "Keep learning" runs full width underneath.
+
+The breakpoints are the two `@media (min-width: ...)` blocks at the end of the CSS in `src/template.html`.
+
+## Trivia
+
+Facts live in the `FACTS` list in `src/template.html`. Each has:
+
+| Field | Meaning |
+|---|---|
+| `type` | `why`, `myth`, `trivia` or `honest` (sets the lead-in: "Why it works.", "Myth.", "Did you know?", "Worth remembering.") |
+| `sp` | prefer this fact when the hand on screen matches `when(h)` |
+| `g` | makes sense with no hand on screen, so it can appear on the home screen and in "Keep learning" |
+| `src` | `engine` (computed from, or checked against, the engine), `review` (reasoning to be reviewed) or `verify` (needs a source check before launch) |
+
+Each hand shows one fact (up to three of a day's five are hand-specific), the home screen shows a fact of the day, and the result screen has two more plus "Blackjack by the numbers" (dealer bust rates, bust chances when you hit, where the dealer finishes). The numbers come from `data/pool.json`, so they change if the rules change.
+
+`tests/content.test.js` checks that every hand-specific fact is true for every hand it can appear on. Add a test line there when you add a fact with a numeric or hand-specific claim.
+
 ## What is and isn't built
 
 | Built | Not built yet |
 |---|---|
 | Daily five from a 133-hand pool, scoring, per-hand explanations, facts, instinct traps, play styles | A backend (leaderboard and player percentages only work inside Claude today) |
-| Result screen, share text, practice round | Server-side scoring and a real one-play-a-day limit |
+| Result screen, share text, practice round, the fact bank, fact of the day, "Keep learning" numbers | Server-side scoring and a real one-play-a-day limit |
 | Age gate (self-declared), nickname checks | Real age verification |
 | Self-hosted fonts, no cookies, no third-party requests | Email sign-up (the button only records interest), invite links, partner offer |
 
@@ -77,6 +109,6 @@ src/template.html page source (HTML, CSS and JS in one file)
 data/pool.json    generated hand pool with expected values
 engine/           the maths: engine.py, make_pool.py, chart_check.py, mc_check.py
 scripts/          build.py, contrast_check.py
-tests/            logic and persona tests (jsdom)
+tests/            logic, persona and content tests (jsdom), plus browser/ for the real-browser layout check
 vercel.json       headers and routing
 ```
