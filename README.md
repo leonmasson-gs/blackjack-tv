@@ -10,7 +10,7 @@ Free to play. No money, chips or prizes. Status: **prototype**, not for public r
 python3 -m http.server 8000      # from the repo root, then open http://localhost:8000
 ```
 
-Add `?debug` to the address to show the **reset my data** and **sample data preview** tools on the "How it's scored" page.
+Add `?debug` to the address (`http://localhost:8000/?debug`) to show a yellow strip at the top of every screen with **Reset my data and replay** (one click, no confirmation) and **Sample data** (previews the player percentages with invented numbers). The same two tools are at the bottom of "How it's scored". The word is case-sensitive: `?debug`, not `?Debug`.
 
 ## Deploy
 

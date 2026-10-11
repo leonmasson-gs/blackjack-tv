@@ -237,6 +237,10 @@ table.mini-t td.r{text-align:right;white-space:nowrap;padding-left:10px;font-var
   .numbers{grid-template-columns:repeat(3,minmax(0,1fr));gap:36px}
 }
 
+/* ---- debug strip (only with ?debug in the address, or inside Claude) ---- */
+.debugbar{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:2px 12px;margin:0 0 10px;font-size:.875rem}
+.debugbar[hidden]{display:none}
+.debugbar .link{color:var(--warn);text-decoration:underline;min-height:36px;padding:4px 8px}
 /* ---- story, timeline, bonus question ---- */
 .table .actions{margin-top:16px}
 .table .act{color:var(--ink)}
@@ -274,6 +278,7 @@ table.mini-t td.r{text-align:right;white-space:nowrap;padding-left:10px;font-var
       <button class="link" data-go="about" id="nav-about">How it's scored</button>
     </nav>
   </header>
+  <div id="debugbar" class="debugbar" hidden></div>
   <main id="app" tabindex="-1"></main>
   <footer class="rg"><p style="margin:0">Free to play. No money, chips or prizes are involved. <span class="ph">[Placeholder: responsible gambling wording, pending legal review]</span></p></footer>
   <div id="live" class="sr" aria-live="polite"></div>
@@ -834,6 +839,8 @@ function render(){
   else if(!SV.age&&v!=='under'){html=vGate();narrow=true}
   else{html={home:vHome,play:vPlay,result:vResult,board:vBoard,about:vAbout,under:vUnder}[v]();narrow=(v==='board'||v==='about'||v==='under')}
   app.innerHTML=narrow?'<div class="narrow">'+html+'</div>':html;
+  var dbar=document.getElementById('debugbar');
+  if(DEBUG){dbar.hidden=false;dbar.innerHTML='<b>Debug mode</b><button class="link" data-act="reset-now">Reset my data and replay</button><button class="link" data-act="sample">Sample data: '+(SAMPLE?'on':'off')+'</button>'}else{dbar.hidden=true;dbar.innerHTML=''}
   document.getElementById('nav-board').setAttribute('aria-current',v==='board'?'page':'false');
   document.getElementById('nav-about').setAttribute('aria-current',v==='about'?'page':'false');
   var f=S.focus;S.focus=null;
@@ -877,7 +884,7 @@ document.addEventListener('click',function(e){
   else if(a==='sample'){SAMPLE=!SAMPLE;render()}
   else if(a==='reset'){S.confirmReset=true;render()}
   else if(a==='reset-no'){S.confirmReset=false;render()}
-  else if(a==='reset-yes'){
+  else if(a==='reset-yes'||a==='reset-now'){
     SV={age:SV.age,nick:'',days:{}};saveLocal();S.round=null;S.confirmReset=false;
     if(DB&&UID)DB.doc('plays/'+UID).delete().catch(function(){});
     go('home');say('Your data was reset.');

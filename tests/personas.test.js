@@ -92,6 +92,14 @@ const ROOT = path.join(__dirname, '..');
   ok(!!q(d, '[data-act="reset"]') && !!q(d, '[data-act="sample"]'), 'Hannah: ?debug shows the reset and sample tools');
   known('Kit: scores are stored and trusted in the browser; the one-play-a-day limit needs a server');
 
+  // Debug strip: visible only with ?debug, and one click replays today's five
+  ({ dom, d } = await start({ keepGate: false })); ok(q(d, '#debugbar').hidden && !/Reset my data and replay/.test(q(d, '#debugbar').textContent), 'Kit: no debug strip for normal visitors');
+  ({ dom, d } = await start({ search: '?debug' })); await playAll(d); q(d, '.brand').click();
+  ok(!q(d, '#debugbar').hidden && /See today/.test(text(d)), 'Hannah: with ?debug the strip shows on every screen, and today is already played');
+  q(d, '[data-act="reset-now"]').click();
+  ok(!!q(d, '[data-start]') && /Play today/.test(text(d)), 'Hannah: one click on the debug strip resets and offers today\u2019s first hand again');
+  await playAll(d); ok(/of optimal play/.test(text(d)), 'Hannah: the replayed round finishes normally');
+
   ok(errors.length === 0, 'no script errors' + (errors.length ? ': ' + errors.join('; ') : ''));
   done();
 })();
